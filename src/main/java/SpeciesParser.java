@@ -40,32 +40,32 @@ class SpeciesParser {
 //        System.out.println(cleanedPage);
         JSONObject species = new JSONObject();
         String name = parseName(cleanedPage);
-//        System.out.println(name);
+        System.out.println(name);
         species.put("name", name);
-        if (problemSpecies.contains(name) || name.contains("form")) {
+        if (problemSpecies.contains(name) || name.contains("form") && !name.equals("Castform")) {
             System.out.println(species);
             return species;
         }
-        species.put("stage", parseStage(cleanedPage, name));
-        species.put("capabilities", parseCapabilities(cleanedPage));
-        species.put("evolutionChain", parseEvolutionChain(cleanedPage));
-        species.put("highAbilities", parseHighAbilities(cleanedPage));
-        species.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
-        species.put("basicAbilities", parseBasicAbilities(cleanedPage));
-        species.put("tutorMoves", parseTutorMoves(cleanedPage));
-        species.put("eggMoves", parseEggMoves(cleanedPage));
-        species.put("machineMoves", parseMachineMoves(cleanedPage));
+//        species.put("stage", parseStage(cleanedPage, name));
+//        species.put("capabilities", parseCapabilities(cleanedPage));
+//        species.put("evolutionChain", parseEvolutionChain(cleanedPage));
+//        species.put("highAbilities", parseHighAbilities(cleanedPage));
+//        species.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
+//        species.put("basicAbilities", parseBasicAbilities(cleanedPage));
+//        species.put("tutorMoves", parseTutorMoves(cleanedPage));
+//        species.put("eggMoves", parseEggMoves(cleanedPage));
+//        species.put("machineMoves", parseMachineMoves(cleanedPage));
         species.put("genderRatio", parseGenderRatio(cleanedPage));
-        species.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
-        species.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
-        species.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
-        species.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
-        species.put("stats", parseStats(cleanedPage));
-        species.put("skills", parseSkills(cleanedPage));
-        species.put("height", parseHeight(cleanedPage));
-        species.put("weight", parseWeight(cleanedPage));
-        species.put("diet", parseCommaSeparatedList(cleanedPage, "Diet"));
-        species.put("habitat", parseCommaSeparatedList(cleanedPage, "Habitat"));
+//        species.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
+//        species.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
+//        species.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
+//        species.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
+//        species.put("stats", parseStats(cleanedPage));
+//        species.put("skills", parseSkills(cleanedPage));
+//        species.put("height", parseHeight(cleanedPage));
+//        species.put("weight", parseWeight(cleanedPage));
+//        species.put("diet", parseCommaSeparatedList(cleanedPage, "Diet"));
+//        species.put("habitat", parseCommaSeparatedList(cleanedPage, "Habitat"));
         System.out.println(species);
         return species;
     }
@@ -264,7 +264,7 @@ class SpeciesParser {
         Matcher genderMatcher = genderPattern.matcher(page);
         if (genderMatcher.find()) {
             String result = genderMatcher.group(1);
-            String ratioRegex = "([0-9\\.]+)%\\s*M\\s*\\/\\s*([0-9\\.]+)%\\s*F";
+            String ratioRegex = "([\\d\\.]+)%\\s*M\\s*(?:\\/)?\\s*([\\d\\.]+)%\\s*F";
             Pattern ratioPattern = Pattern.compile(ratioRegex);
             Matcher ratioMatcher = ratioPattern.matcher(result);
             if (ratioMatcher.find()) {
