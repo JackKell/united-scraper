@@ -1,3 +1,4 @@
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -14,9 +15,21 @@ import static java.util.Arrays.asList;
 class SpeciesParser {
     final List<String> problemSpecies = asList(
             "Pumpkaboo", // Too many forms
-            "Gourgeist", // Too many forms
-            "Rotom normal form", // Too many forms
-            "Rotom appliance forms" // Too many forms
+            "Gourgeist" // Too many forms
+    );
+
+    // A list of a the special capabilities
+    // Naturewalk and Mountable are not included in this list because they require there own parsers
+    final List<String> possibleSpecialCapabilities = asList("Alluring", "Amorphous", "Aura Reader", "Aura Pulse",
+            "Blindsense", "Bloom", "Blender", "Chilled", "Darkvision", "Dead Silent", "Delta Evolution", "Dream Mist",
+            "Dream Reader", "Egg Warmer", "Firestarter", "Fortune", "Fountain", "Freezer", "Gather Unown", "Gilled",
+            "Glow", "Groundshaper", "Guster", "Heart Gift", "Heater", "Herb Growth", "Honey Gather", "Illusionist",
+            "Inflatable", "Invisibility", "Juicer", "Keystone Warp", "Letter Press", "Living Weapon", "Magnetic",
+            "Marsupial", "Materializer", "Milk Collection", "Mindlock", "Mushroom Harvest", "Mushroom Harvest",
+            "Pack Mon", "Pearl Creation", "Phasing", "Planter", "Premonition", "Reach", "Shadow Meld", "Shapeshifter",
+            "Shrinkable", "Soulless", "Split Evolution", "Sprouter", "Stealth", "Telekinetic", "Telepath", "Threaded",
+            "Tracker", "Tremorsense", "Underdog", "Volatile Bomb", "Wallclimber", "Weathershape", "Wielder", "Wired",
+            "X-Ray Vision", "Zapper"
     );
 
     SpeciesParser() {
@@ -29,9 +42,12 @@ class SpeciesParser {
         String name = parseName(cleanedPage);
 //        System.out.println(name);
         species.put("name", name);
-        if (problemSpecies.contains(name)) {
+        if (problemSpecies.contains(name) || name.contains("form")) {
+            System.out.println(species);
             return species;
         }
+        species.put("stage", parseStage(cleanedPage, name));
+        species.put("capabilities", parseCapabilities(cleanedPage));
         species.put("evolutionChain", parseEvolutionChain(cleanedPage));
         species.put("highAbilities", parseHighAbilities(cleanedPage));
         species.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
@@ -41,14 +57,7 @@ class SpeciesParser {
         species.put("machineMoves", parseMachineMoves(cleanedPage));
         species.put("genderRatio", parseGenderRatio(cleanedPage));
         species.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
-        species.put("sky", parseNamedInteger(cleanedPage, "Sky"));
-        species.put("swim", parseNamedInteger(cleanedPage, "Swim"));
-        species.put("overland", parseNamedInteger(cleanedPage, "Overland"));
-        species.put("levitate", parseNamedInteger(cleanedPage, "Levitate"));
-        species.put("power", parseNamedInteger(cleanedPage, "Power"));
-        species.put("burrow", parseNamedInteger(cleanedPage, "Burrow"));
         species.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
-        species.put("jump", parseJump(cleanedPage));
         species.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
         species.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
         species.put("stats", parseStats(cleanedPage));
@@ -91,6 +100,8 @@ class SpeciesParser {
         cleanedPage = cleanedPage.replaceAll("wiht a", "with");
         // Fix Empoleon, Marshtomp, SandSlash, and Grotle who has both "High Ability" and "High Abilities"
         cleanedPage = cleanedPage.replaceAll("(High Ability:\\s*[\\w ]*)\r\n\\s*High Abilities: ([\\w ]*)", "$1 / $2");
+        // Fix typo in Sligoo to be Sliggoo
+        cleanedPage = cleanedPage.replaceAll("Sligoo", "Sliggoo");
         return cleanedPage;
     }
 
@@ -157,9 +168,8 @@ class SpeciesParser {
         Matcher matcher = pattern.matcher(text);
         if (matcher.find()) {
             return parseInt(matcher.group(1));
-        } else {
-            return 0;
         }
+        return null;
     }
 
     private List<String> parseSlashSeparatedList(String text, String name) {
@@ -491,7 +501,52 @@ class SpeciesParser {
         return evolutionCondition;
     }
 
-    private int parseStage(String page) {
-        return 0;
+    private String parseCapabilityInformation(String page) {
+        final String capabilityInformationRegex = "Capability List \r\n([\\w\\W]+?)  Skill List";
+        Matcher capabilityInformationMatcher = generateMatcher(capabilityInformationRegex, page);
+        if (capabilityInformationMatcher.find()) {
+            return capabilityInformationMatcher.group(1).replaceAll("\r\n", "");
+        } else {
+            return "";
+        }
+    }
+
+    private List<String> parseSpecialCapabilities(String capabilityInformation) {
+        List<String> specialCapabilities = new ArrayList<>();
+        for(String possibleSpecialCapability : possibleSpecialCapabilities) {
+            if (capabilityInformation.contains(possibleSpecialCapability)) {
+                specialCapabilities.add(possibleSpecialCapability);
+            }
+        }
+        return specialCapabilities;
+    }
+
+    private Map<String, Object> parseCapabilities(String page) {
+        Map<String, Object> capabilities = new HashMap<>();
+        final String capabilityInformation = parseCapabilityInformation(page);
+        List<String> specialCapabilities = parseSpecialCapabilities(capabilityInformation);
+        capabilities.put("specialCapabilities", specialCapabilities);
+        capabilities.put("sky", parseNamedInteger(capabilityInformation, "Sky"));
+        capabilities.put("swim", parseNamedInteger(capabilityInformation, "Swim"));
+        capabilities.put("overland", parseNamedInteger(capabilityInformation, "Overland"));
+        capabilities.put("levitate", parseNamedInteger(capabilityInformation, "Levitate"));
+        capabilities.put("power", parseNamedInteger(capabilityInformation, "Power"));
+        capabilities.put("burrow", parseNamedInteger(capabilityInformation, "Burrow"));
+        capabilities.put("jump", parseJump(capabilityInformation));
+        capabilities.put("mountable", parseNamedInteger(capabilityInformation, "Mountable"));
+        return capabilities;
+    }
+
+    private Matcher generateMatcher(String regex, String text) {
+        return Pattern.compile(regex).matcher(text);
+    }
+
+    private Integer parseStage(String page, String pokemonName) {
+        final String stageRegex = "(\\d) +- +" + pokemonName;
+        Matcher stageMatcher = generateMatcher(stageRegex, page);
+        if (stageMatcher.find()) {
+            return parseInt(stageMatcher.group(1));
+        }
+        return null;
     }
 }

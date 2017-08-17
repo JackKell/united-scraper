@@ -11,31 +11,32 @@ public class UnitedScraper {
         parsePokedex();
     }
 
-    static private List<String> getPages(PDDocument document, int startPageNumber, int endPageNumber) throws IOException {
-        List<String> pages = new ArrayList<String>();
+    static private List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
+        final String pokedexPath = "src\\main\\resources\\pokedex.pdf";
+        File file = new File(pokedexPath);
+        PDDocument pokedex = PDDocument.load(file);
+        List<String> pages = new ArrayList<>();
         PDFTextStripper stripper = new PDFTextStripper();
-        for (int pageNumber = startPageNumber; pageNumber < endPageNumber; pageNumber++) {
+        // Start at page 12 with Bulbasaur
+        for (int pageNumber = startPageNumber; pageNumber <= endPageNumber; pageNumber++) {
+            // Skip the legendaries page
             if (pageNumber == 682) {
                 continue;
             }
             stripper.setStartPage(pageNumber);
             stripper.setEndPage(pageNumber);
-            String page = stripper.getText(document);
+            String page = stripper.getText(pokedex);
             pages.add(page);
         }
+        pokedex.close();
         return pages;
     }
 
     static private void parsePokedex() throws IOException {
-        final String pokedexPath = "src\\main\\resources\\pokedex.pdf";
-        File file = new File(pokedexPath);
-        PDDocument pokedex = PDDocument.load(file);
-//        12 - 745
-        List<String> speciesPages = getPages(pokedex, 12, 745);
+        List<String> speciesPages = getPokedexPages(12, 745);
         SpeciesParser speciesParser = new SpeciesParser();
         for (String speciesPage: speciesPages) {
             speciesParser.parse(speciesPage);
         }
-        pokedex.close();
     }
 }
