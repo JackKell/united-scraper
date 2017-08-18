@@ -1,5 +1,3 @@
-import com.sun.corba.se.spi.ior.ObjectKey;
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -33,8 +31,7 @@ class SpeciesParser {
             "X-Ray Vision", "Zapper"
     );
 
-    SpeciesParser() {
-    }
+    SpeciesParser() {}
 
     JSONObject parse(List<String> pages) {
         JSONObject species = new JSONObject();
@@ -115,6 +112,14 @@ class SpeciesParser {
         cleanedPage = cleanedPage.replaceAll("A2(?! Fly)", "A2 Fly,");
         // Change Ditto Diet to be more parseable
         cleanedPage = cleanedPage.replaceAll("Diet can change with its form", "Ditto");
+        // Fix typo in Snivy ". lbs." to be " lbs."
+        cleanedPage = cleanedPage.replaceAll("\\. lbs\\.", " lbs.");
+        // Fix typo in Kricketune for "Jump 3," to be "Jump 3/3,"
+        cleanedPage = cleanedPage.replaceAll("Jump 3,", "Jump 3/3");
+        // Fix typo in Bayleef for "Ath " to be "Athl"
+        cleanedPage = cleanedPage.replaceAll("Ath ", "Athl");
+        // Fix typo in Servine for "Percep," to be "Percep"
+        cleanedPage = cleanedPage.replaceAll("Percep,", "Percep");
         return cleanedPage;
     }
 
@@ -125,87 +130,82 @@ class SpeciesParser {
     }
 
     private Map<String, Object> parseHeight(String page) {
-        Map<String, Object> height = new HashMap<String, Object>();
-        final String heightRegex = "Height\\s*:\\s*(\\d*' \\d*\") \\/ (\\d*.\\d*)m \\((\\w*)\\)";
-        Pattern heightPattern = Pattern.compile(heightRegex);
-        Matcher heightMatcher = heightPattern.matcher(page);
+        final Map<String, Object> height = new HashMap<>();
+        final String heightRegex = "Height\\s*:\\s*(\\d*' \\d*\") \\/ (\\d*.\\d*) *m \\((\\w*)\\)";
+        final Matcher heightMatcher = Pattern.compile(heightRegex).matcher(page);
         if (heightMatcher.find()) {
-            String ft = heightMatcher.group(1);
-            float m = parseFloat(heightMatcher.group(2));
-            String size = heightMatcher.group(3);
+            final String ft = heightMatcher.group(1);
+            final float m = parseFloat(heightMatcher.group(2));
+            final String size = heightMatcher.group(3);
             height.put("ft", ft);
             height.put("m", m);
             height.put("size", size);
             return height;
         } else {
-            return null;
+            throw new Error("ERROR: All pokemon species should have a height to parse\n" + page);
         }
     }
 
     private Map<String, Object> parseWeight(String page) {
-        Map<String, Object> weight = new HashMap<String, Object>();
-        String weightRegex = "Weight\\s*:\\s*(\\d*.\\d*) lbs\\. \\/ (\\d*.\\d*)kg \\((\\w*)\\)";
-        ;
-        Pattern weightPattern = Pattern.compile(weightRegex);
-        Matcher weightMatcher = weightPattern.matcher(page);
+        final Map<String, Object> weight = new HashMap<>();
+        final String weightRegex = "Weight\\s*:\\s*(\\d*.\\d*) *lbs\\. \\/ (\\d*.\\d*) *kg \\((\\w*)\\)";
+        final Matcher weightMatcher = Pattern.compile(weightRegex).matcher(page);
         if (weightMatcher.find()) {
-            float lbs = parseFloat(weightMatcher.group(1));
-            float kg = parseFloat(weightMatcher.group(2));
-            int weightClass = parseInt(weightMatcher.group(3));
+            final float lbs = parseFloat(weightMatcher.group(1));
+            final float kg = parseFloat(weightMatcher.group(2));
+            final int weightClass = parseInt(weightMatcher.group(3));
             weight.put("lbs", lbs);
             weight.put("kg", kg);
             weight.put("class", weightClass);
             return weight;
         } else {
-            return null;
+            throw new Error("ERROR: All pokemon species should have a weight to parse\n" + page);
         }
     }
 
     private Map<String, Integer> parseJump(String page) {
-        Map<String, Integer> jump = new HashMap<>();
-        String p = "Jump\\s*(\\d*)\\/(\\d*)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
-        if (matcher.find()) {
-            jump.put("long", parseInt(matcher.group(1)));
-            jump.put("high", parseInt(matcher.group(2)));
+        final Map<String, Integer> jump = new HashMap<>();
+        final String jumpRegex = "Jump\\s*(\\d*)\\/(\\d*)";
+        final Matcher jumpMatcher = Pattern.compile(jumpRegex).matcher(page);
+        if (jumpMatcher.find()) {
+            final int longJump = parseInt(jumpMatcher.group(1));
+            final int highJump = parseInt(jumpMatcher.group(2));
+            jump.put("long", longJump);
+            jump.put("high", highJump);
             return jump;
         } else {
-            return null;
+            throw new Error("ERROR: All pokemon species should have a jump to parse\n" + page);
         }
     }
 
     private Integer parseNamedInteger(String text, String name) {
-        final String p = name + "\\s*(\\d+)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            return parseInt(matcher.group(1));
+        final String namedIntegerRegex = name + "\\s*(\\d+)";
+        Matcher namedIntegerMatcher = Pattern.compile(namedIntegerRegex).matcher(text);
+        if (namedIntegerMatcher.find()) {
+            return parseInt(namedIntegerMatcher.group(1));
         }
         return null;
     }
 
     private List<String> parseSlashSeparatedList(String text, String name) {
-        List<String> items = new ArrayList<>();
-        String regex = name + "\\s*:\\s*(\\w*)(?:\\s*\\/\\s*(\\w*))?";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
+        final List<String> items = new ArrayList<>();
+        final String namedSlashSeparatedListRegex = name + "\\s*:\\s*(\\w*)(?:\\s*\\/\\s*(\\w*))?";
+        final Matcher matcher = Pattern.compile(namedSlashSeparatedListRegex).matcher(text);
         if (matcher.find()) {
-            String item1 = matcher.group(1);
-            String item2 = matcher.group(2);
+            final String item1 = matcher.group(1);
+            final String item2 = matcher.group(2);
             items.add(item1);
             if (item2 != null) items.add(item2);
         } else {
-            throw new Error("No match was found in:\n" + text + "\n For regex string " + regex);
+            throw new Error("No match was found in:\n" + text + "\n For regex string " + namedSlashSeparatedListRegex);
         }
         return items;
     }
 
     private List<String> parseCommaSeparatedList(String text, String name) {
-        List<String> items;
-        String p = name + "\\s*:\\s*((?:\\w+)(?:,\\s*\\w+)*)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(text);
+        final List<String> items;
+        final String p = name + "\\s*:\\s*((?:\\w+)(?:,\\s*\\w+)*)";
+        final Matcher matcher = Pattern.compile(p).matcher(text);
         if (matcher.find()) {
             String itemsString = matcher.group(1);
             items = asList(itemsString.split(","));
@@ -219,7 +219,7 @@ class SpeciesParser {
     }
 
     private Map<String, Integer> parseStats(String page) {
-        Map<String, Integer> stats = new HashMap<>();
+        final Map<String, Integer> stats = new HashMap<>();
         stats.put("hp", parseNamedInteger(page, "HP:"));
         stats.put("attack", parseNamedInteger(page, "Attack:"));
         stats.put("defense", parseNamedInteger(page, "Defense:"));
@@ -230,16 +230,15 @@ class SpeciesParser {
     }
 
     private Map<String, Object> parseSkill(String page, String name) {
-        Map<String, Object> skill = new HashMap<>();
-        String p = name + "\\s*((\\d*)d(\\d*)(?:\\+(\\d*))?)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
+        final Map<String, Object> skill = new HashMap<>();
+        final String skillRegex = name + "\\s*((\\d*)d(\\d*)(?:\\+(\\d*))?)";
+        final Matcher matcher = Pattern.compile(skillRegex).matcher(page);
         if (matcher.find()) {
-            String value = matcher.group(1);
-            int diceNumber = parseInt(matcher.group(2));
-            int diceFaces = parseInt(matcher.group(3));
-            String buffString = matcher.group(4);
-            int buff;
+            final String value = matcher.group(1);
+            final int diceNumber = parseInt(matcher.group(2));
+            final int diceFaces = parseInt(matcher.group(3));
+            final String buffString = matcher.group(4);
+            final int buff;
             if (buffString == null) {
                 buff = 0;
             } else {
@@ -251,12 +250,12 @@ class SpeciesParser {
             skill.put("buff", buff);
             return skill;
         } else {
-            return null;
+            throw new Error("ERROR: All pokemon species should have a " + name + " to parse\n" + page);
         }
     }
 
     private Map<String, Map<String, Object>> parseSkills(String page) {
-        Map<String, Map<String, Object>> skills = new HashMap<>();
+        final Map<String, Map<String, Object>> skills = new HashMap<>();
         skills.put("athletics", parseSkill(page, "Athl"));
         skills.put("acrobatics", parseSkill(page, "Acro"));
         skills.put("combat", parseSkill(page, "Combat"));
@@ -267,22 +266,16 @@ class SpeciesParser {
     }
 
     private Map<String, Object> parseGenderRatio(String page) {
-        Map<String, Object> genderRatio = new HashMap<>();
-        genderRatio.put("male", 0.0f);
-        genderRatio.put("female", 0.0f);
-        genderRatio.put("gendered", false);
-        genderRatio.put("hermaphrodite", false);
-        String genderRegex = "Gender Ratio\\s*:\\s*(.*)\r\n";
-        Pattern genderPattern = Pattern.compile(genderRegex);
-        Matcher genderMatcher = genderPattern.matcher(page);
+        final Map<String, Object> genderRatio = new HashMap<>();
+        final String genderRegex = "Gender Ratio\\s*:\\s*(.*)\r\n";
+        final Matcher genderMatcher = Pattern.compile(genderRegex).matcher(page);
         if (genderMatcher.find()) {
-            String result = genderMatcher.group(1);
-            String ratioRegex = "([\\d\\.]+)%\\s*M\\s*(?:\\/)?\\s*([\\d\\.]+)%\\s*F";
-            Pattern ratioPattern = Pattern.compile(ratioRegex);
-            Matcher ratioMatcher = ratioPattern.matcher(result);
+            final String result = genderMatcher.group(1);
+            final String ratioRegex = "([\\d\\.]+)%\\s*M\\s*(?:\\/)?\\s*([\\d\\.]+)%\\s*F";
+            final Matcher ratioMatcher = Pattern.compile(ratioRegex).matcher(result);
             if (ratioMatcher.find()) {
-                float maleRatio = parseFloat(ratioMatcher.group(1));
-                float femaleRatio = parseFloat(ratioMatcher.group(2));
+                final float maleRatio = parseFloat(ratioMatcher.group(1));
+                final float femaleRatio = parseFloat(ratioMatcher.group(2));
                 genderRatio.put("male", maleRatio);
                 genderRatio.put("female", femaleRatio);
                 genderRatio.put("gendered", true);
@@ -293,24 +286,19 @@ class SpeciesParser {
             } else if (result.equals("No Gender") || result.equals("Genderless")) {
                 genderRatio.put("gendered", false);
                 return genderRatio;
-            } else {
-                System.out.println(result);
-                return null;
             }
-        } else {
-            return null;
         }
+        throw new Error("ERROR: All pokemon species should have a gender ratio to parse\n" + page);
     }
 
     private List<Map<String, Object>> parseLevelUpMoves(String page) {
-        List<Map<String, Object>> levelUpMoves = new ArrayList<>();
-        String levelUpMoveRegex = "(\\d+)\\s+(['a-zA-Z- ]+)\\s+-";
-        Pattern levelUpMovePattern = Pattern.compile(levelUpMoveRegex);
-        Matcher levelUpMoveMatcher = levelUpMovePattern.matcher(page);
+        final List<Map<String, Object>> levelUpMoves = new ArrayList<>();
+        final String levelUpMoveRegex = "(\\d+)\\s+(['a-zA-Z- ]+)\\s+-";
+        final Matcher levelUpMoveMatcher = Pattern.compile(levelUpMoveRegex).matcher(page);
         while (levelUpMoveMatcher.find()) {
-            Map<String, Object> levelUpMove = new HashMap<>();
-            int level = parseInt(levelUpMoveMatcher.group(1));
-            String move = levelUpMoveMatcher.group(2);
+            final Map<String, Object> levelUpMove = new HashMap<>();
+            final int level = parseInt(levelUpMoveMatcher.group(1));
+            final String move = levelUpMoveMatcher.group(2);
             levelUpMove.put("move", move);
             levelUpMove.put("level", level);
             levelUpMoves.add(levelUpMove);
@@ -319,19 +307,19 @@ class SpeciesParser {
     }
 
     private List<String> parseMachineMoves(String page) {
-        List<String> machineMoves = new ArrayList<>();
-        String p = "TM\\/HM Move List\\s*([\\s\\d\\w,-]*?)(?:Egg|Tutor)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
-        String machineMoveRegex = "\\w*? ([a-zA-Z -]+)";
-        Pattern machineMovePattern = Pattern.compile(machineMoveRegex);
-        if (matcher.find()) {
-            String result = matcher.group(1);
+        final List<String> machineMoves = new ArrayList<>();
+        final String machineMoveListRegex = "TM\\/HM Move List\\s*([\\s\\d\\w,-]*?)(?:Egg|Tutor)";
+        final Matcher machineMoveListMatcher = Pattern.compile(machineMoveListRegex).matcher(page);
+        final String machineMoveRegex = "\\w*? ([a-zA-Z -]+)";
+        final Pattern machineMovePattern = Pattern.compile(machineMoveRegex);
+        if (machineMoveListMatcher.find()) {
+            String result = machineMoveListMatcher.group(1);
             result = result.replaceAll("\r\n", "");
             if (result.equals("None") || result.isEmpty()) return null;
-            List<String> machineMoveStrings = asList(result.trim().split(","));
+            final List<String> machineMoveStrings = asList(result.trim().split(","));
+            Matcher machineMoveMatcher;
             for (String machineMoveString : machineMoveStrings) {
-                Matcher machineMoveMatcher = machineMovePattern.matcher(machineMoveString.trim());
+                machineMoveMatcher = machineMovePattern.matcher(machineMoveString.trim());
                 if (machineMoveMatcher.find()) {
                     machineMoves.add(machineMoveMatcher.group(1));
                 } else {
@@ -344,22 +332,22 @@ class SpeciesParser {
     }
 
     private Map<String, Object> parseTutorMoves(String page) {
-        Map<String, Object> tutorMoves = new HashMap<>();
-        String p = "Tutor Move List\r\n((?:[A-Za-z -]+)(?:,\\s(?:\r\n)?[A-Za-z-]+(?: (?:\r\n)?[A-Za-z-]+)?(?: (?:\r\n)?\\(N\\))?)+)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
-        String tutorMoveRegex = "([A-Za-z-]*(?: [A-Za-z-]*)?)(?: (\\(N\\)))?";
-        Pattern tutorMovePattern = Pattern.compile(tutorMoveRegex);
-        if (matcher.find()) {
-            String result = matcher.group(1);
+        final Map<String, Object> tutorMoves = new HashMap<>();
+        final String tutorMoveListRegex = "Tutor Move List\r\n((?:[A-Za-z -]+)(?:,\\s(?:\r\n)?[A-Za-z-]+(?: (?:\r\n)?[A-Za-z-]+)?(?: (?:\r\n)?\\(N\\))?)+)";
+        final Matcher tutorMoveListMatcher = Pattern.compile(tutorMoveListRegex).matcher(page);
+        final String tutorMoveRegex = "([A-Za-z-]*(?: [A-Za-z-]*)?)(?: (\\(N\\)))?";
+        final Pattern tutorMovePattern = Pattern.compile(tutorMoveRegex);
+        if (tutorMoveListMatcher.find()) {
+            String result = tutorMoveListMatcher.group(1);
             result = result.replaceAll("\r\n", "");
-            List<String> tutorMoveStrings = asList(result.trim().split(","));
+            final List<String> tutorMoveStrings = asList(result.trim().split(","));
+            Matcher tutorMoveMatcher;
             for (String tutorMoveString : tutorMoveStrings) {
-                Matcher tutorMoveMatcher = tutorMovePattern.matcher(tutorMoveString.trim());
+                tutorMoveMatcher = tutorMovePattern.matcher(tutorMoveString.trim());
                 if (tutorMoveMatcher.find()) {
-                    Map<String, Object> tutorMove = new HashMap<>();
-                    String move = tutorMoveMatcher.group(1);
-                    Boolean isHeartScaleMove = tutorMoveMatcher.group(2) != null;
+                    final Map<String, Object> tutorMove = new HashMap<>();
+                    final String move = tutorMoveMatcher.group(1);
+                    final Boolean isHeartScaleMove = tutorMoveMatcher.group(2) != null;
                     tutorMove.put("move", move);
                     if (isHeartScaleMove) tutorMove.put("heartScaleMove", true);
                     tutorMoves.put(move, tutorMove);
@@ -373,12 +361,11 @@ class SpeciesParser {
     }
 
     private List<String> parseEggMoves(String page) {
-        List<String> eggMoves;
-        String p = "Egg Move List\\s*([-a-zA-Z,\\s]+)Tutor Move List";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
-        if (matcher.find()) {
-            String result = matcher.group(1);
+        final List<String> eggMoves;
+        final String eggMoveListRegex = "Egg Move List\\s*([-a-zA-Z,\\s]+)Tutor Move List";
+        final Matcher eggMoveListMatcher = Pattern.compile(eggMoveListRegex).matcher(page);
+        if (eggMoveListMatcher.find()) {
+            String result = eggMoveListMatcher.group(1);
             result = result.replaceAll("\r\n", "");
             eggMoves = asList(result.trim().split(","));
             for (int i = 0; i < eggMoves.size(); i++) {
@@ -390,10 +377,9 @@ class SpeciesParser {
     }
 
     private List<String> parseBasicAbilities(String page) {
-        List<String> basicAbilities = new ArrayList<String>();
-        String p = "Basic\\s*Ability\\s*\\d+\\s*:\\s*(.*)\\s";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
+        final List<String> basicAbilities = new ArrayList<>();
+        final String basicAbilityRegex = "Basic\\s*Ability\\s*\\d+\\s*:\\s*(.*)\\s";
+        final Matcher matcher = Pattern.compile(basicAbilityRegex).matcher(page);
         while (matcher.find()) {
             basicAbilities.add(matcher.group(1));
         }
@@ -401,10 +387,9 @@ class SpeciesParser {
     }
 
     private List<String> parseAdvancedAbilities(String page) {
-        List<String> advancedAbilities = new ArrayList<String>();
-        String p = "Adv\\s*Ability\\s*\\d+\\s*:\\s*(.*)\\s";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
+        final List<String> advancedAbilities = new ArrayList<>();
+        final String advancedAbilityRegex = "Adv\\s*Ability\\s*\\d+\\s*:\\s*(.*)\\s";
+        final Matcher matcher = Pattern.compile(advancedAbilityRegex).matcher(page);
         while (matcher.find()) {
             advancedAbilities.add(matcher.group(1));
         }
@@ -412,12 +397,11 @@ class SpeciesParser {
     }
 
     private List<String> parseHighAbilities(String page) {
-        List<String> highAbilities;
-        String p = "High\\s*Ability\\s*:\\s*((?:.*\\s*\\/)*\\s*.*)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
+        final List<String> highAbilities;
+        final String highAbilityRegex = "High\\s*Ability\\s*:\\s*((?:.*\\s*\\/)*\\s*.*)";
+        final Matcher matcher = Pattern.compile(highAbilityRegex).matcher(page);
         if (matcher.find()) {
-            String result = matcher.group(1);
+            final String result = matcher.group(1);
             highAbilities = asList(result.split("\\/"));
             for (int i = 0; i < highAbilities.size(); i++) {
                 highAbilities.set(i, highAbilities.get(i).trim());
@@ -428,15 +412,14 @@ class SpeciesParser {
     }
 
     private List<Map<String, Object>> parseEvolutionChain(String page) {
-        List<Map<String, Object>> evolutionChain = new ArrayList<>();
-        String p = "(\\d) +- +([\\w-]*) *(.*)";
-        Pattern pattern = Pattern.compile(p);
-        Matcher matcher = pattern.matcher(page);
+        final List<Map<String, Object>> evolutionChain = new ArrayList<>();
+        final String evolutionStageRegex = "(\\d) +- +([\\w-]*) *(.*)";
+        final Matcher matcher = Pattern.compile(evolutionStageRegex).matcher(page);
         while (matcher.find()) {
-            Map<String, Object> evolution = new HashMap<>();
-            int stage = parseInt(matcher.group(1));
-            String pokemon = matcher.group(2);
-            String conditions = matcher.group(3).replaceAll(" (?= )", " ").trim();
+            final Map<String, Object> evolution = new HashMap<>();
+            final int stage = parseInt(matcher.group(1));
+            final String pokemon = matcher.group(2);
+            final String conditions = matcher.group(3).replaceAll(" (?= )", " ").trim();
             evolution.put("stage", stage);
             evolution.put("pokemon", pokemon);
             evolution.put("conditions", parseEvolutionCondition(conditions));
@@ -446,9 +429,8 @@ class SpeciesParser {
     }
 
     private Integer parseMinLevelCondition(String conditions) {
-        String minLevelRegex = "M\\w*m (\\d+)";
-        Pattern minLevelPattern = Pattern.compile(minLevelRegex);
-        Matcher minLevelMatcher = minLevelPattern.matcher(conditions);
+        final String minLevelRegex = "M\\w*m (\\d+)";
+        final Matcher minLevelMatcher = Pattern.compile(minLevelRegex).matcher(conditions);
         if (minLevelMatcher.find()) {
             return parseInt(minLevelMatcher.group(1));
         } else {
@@ -463,33 +445,29 @@ class SpeciesParser {
     }
 
     private String parseHeldItemCondition(String conditions) {
-        String heldItemRegex = "Holding +(.*)? +(?=M\\w*m)";
-        Pattern heldItemPattern = Pattern.compile(heldItemRegex);
-        Matcher heldItemMatcher = heldItemPattern.matcher(conditions);
+        final String heldItemRegex = "Holding +(.*)? +(?=M\\w*m)";
+        final Matcher heldItemMatcher = Pattern.compile(heldItemRegex).matcher(conditions);
         if (heldItemMatcher.find()) {
             return heldItemMatcher.group(1).trim();
-        } else {
-            return null;
         }
+        return null;
     }
 
     private String parseUseItemCondition(String conditions) {
-        String useItemRegex = "\\w* Stone";
-        Pattern useItemPattern = Pattern.compile(useItemRegex);
-        Matcher heldItemMatcher = useItemPattern.matcher(conditions);
+        final String useItemRegex = "\\w* Stone";
+        final Matcher heldItemMatcher = Pattern.compile(useItemRegex).matcher(conditions);
         if (heldItemMatcher.find()) {
-            String match = heldItemMatcher.group(0).trim();
-            if (!match.contains("Oval")) {
-                return match;
+            final String result = heldItemMatcher.group(0).trim();
+            if (!result.contains("Oval")) {
+                return result;
             }
         }
         return null;
     }
 
     private String parseLearnCondition(String conditions) {
-        String learnRegex = "Learn +(\\S*(?: \\S*)?)";
-        Pattern learnPattern = Pattern.compile(learnRegex);
-        Matcher learnMatcher = learnPattern.matcher(conditions);
+        final String learnRegex = "Learn +(\\S*(?: \\S*)?)";
+        final Matcher learnMatcher = Pattern.compile(learnRegex).matcher(conditions);
         if (learnMatcher.find()) {
             return learnMatcher.group(1);
         }
@@ -503,7 +481,7 @@ class SpeciesParser {
     }
 
     private Map<String, Object> parseEvolutionCondition(String conditions) {
-        Map<String, Object> evolutionCondition = new HashMap<>();
+        final Map<String, Object> evolutionCondition = new HashMap<>();
         if (conditions.trim().isEmpty()) return evolutionCondition;
         evolutionCondition.put("minLevel", parseMinLevelCondition(conditions));
         evolutionCondition.put("gender", parseGenderCondition(conditions));
@@ -516,7 +494,7 @@ class SpeciesParser {
 
     private String parseCapabilityInformation(String page) {
         final String capabilityInformationRegex = "Capability List \r\n([\\w\\W]+?)  Skill List";
-        Matcher capabilityInformationMatcher = generateMatcher(capabilityInformationRegex, page);
+        final Matcher capabilityInformationMatcher = Pattern.compile(capabilityInformationRegex).matcher(page);
         if (capabilityInformationMatcher.find()) {
             return capabilityInformationMatcher.group(1).replaceAll("\r\n", "");
         } else {
@@ -525,7 +503,7 @@ class SpeciesParser {
     }
 
     private List<String> parseSpecialCapabilities(String capabilityInformation) {
-        List<String> specialCapabilities = new ArrayList<>();
+        final List<String> specialCapabilities = new ArrayList<>();
         for(String possibleSpecialCapability : possibleSpecialCapabilities) {
             if (capabilityInformation.contains(possibleSpecialCapability)) {
                 specialCapabilities.add(possibleSpecialCapability);
@@ -534,14 +512,10 @@ class SpeciesParser {
         return specialCapabilities;
     }
 
-    private List<String> parseNaturewalk(String capabilityInformation) {
-        return null;
-    }
-
     private Map<String, Object> parseCapabilities(String page) {
-        Map<String, Object> capabilities = new HashMap<>();
+        final Map<String, Object> capabilities = new HashMap<>();
         final String capabilityInformation = parseCapabilityInformation(page);
-        List<String> specialCapabilities = parseSpecialCapabilities(capabilityInformation);
+        final List<String> specialCapabilities = parseSpecialCapabilities(capabilityInformation);
         capabilities.put("specialCapabilities", specialCapabilities);
         capabilities.put("sky", parseNamedInteger(capabilityInformation, "Sky"));
         capabilities.put("swim", parseNamedInteger(capabilityInformation, "Swim"));
@@ -549,19 +523,15 @@ class SpeciesParser {
         capabilities.put("levitate", parseNamedInteger(capabilityInformation, "Levitate"));
         capabilities.put("power", parseNamedInteger(capabilityInformation, "Power"));
         capabilities.put("burrow", parseNamedInteger(capabilityInformation, "Burrow"));
-        capabilities.put("jump", parseJump(capabilityInformation));
+        capabilities.put("jump", parseJump(page));
         capabilities.put("mountable", parseNamedInteger(capabilityInformation, "Mountable"));
         capabilities.put("naturewalk", parseNaturewalk(capabilityInformation));
         return capabilities;
     }
 
-    private Matcher generateMatcher(String regex, String text) {
-        return Pattern.compile(regex).matcher(text);
-    }
-
     private Integer parseStage(String page, String pokemonName) {
         final String stageRegex = "(\\d) +- +" + pokemonName;
-        Matcher stageMatcher = generateMatcher(stageRegex, page);
+        final Matcher stageMatcher = Pattern.compile(stageRegex).matcher(page);
         if (stageMatcher.find()) {
             return parseInt(stageMatcher.group(1));
         }
@@ -569,8 +539,11 @@ class SpeciesParser {
     }
 
     private List<Map<String, Object>> parseMegaEvolutions(String page) {
-        List<Map<String, Object>> megaEvolutions = new ArrayList<>();
-
+        final List<Map<String, Object>> megaEvolutions = new ArrayList<>();
         return megaEvolutions;
+    }
+
+    private List<String> parseNaturewalk(String capabilityInformation) {
+        return null;
     }
 }
