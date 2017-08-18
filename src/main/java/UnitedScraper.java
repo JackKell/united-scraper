@@ -17,6 +17,11 @@ public class UnitedScraper {
         parsePokedex();
     }
 
+    static private List<String> getPokedexPages() throws IOException {
+        return getPokedexPages(12, 745);
+    }
+
+
     static private List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
         final String pokedexPath = "src\\main\\resources\\pokedex.pdf";
         File file = new File(pokedexPath);
@@ -39,7 +44,7 @@ public class UnitedScraper {
     }
 
     static private void parsePokedex() throws IOException {
-        List<String> speciesPages = getPokedexPages(12, 745);
+        List<String> speciesPages = getPokedexPages();
         SpeciesParser speciesParser = new SpeciesParser();
         JSONObject speciesObject = speciesParser.parse(speciesPages);
         String speciesData = speciesObject.toString(2);
