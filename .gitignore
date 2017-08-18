@@ -2,6 +2,7 @@
 *.iml
 *.pdf
 *.txt
+*.json
 target
 
 # Created by .ignore support plugin (hsz.mobi)
