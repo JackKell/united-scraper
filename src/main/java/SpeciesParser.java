@@ -37,36 +37,36 @@ class SpeciesParser {
         for (String page: pages) {
             String cleanedPage = cleanPage(page);
 //            System.out.println(cleanedPage);
-            Map<String, Object> specie = new HashMap<>();
+            final Map<String, Object> specie = new HashMap<>();
             String name = parseName(cleanedPage);
-//          System.out.println(name);
             specie.put("name", name);
             if (problemSpecies.contains(name) || name.contains("form") && !name.equals("Castform")) {
-                System.out.println(specie);
+//                System.out.println(specie);
                 species.put(name, specie);
             } else {
-//                specie.put("stage", parseStage(cleanedPage, name));
+                specie.put("megaEvolutions", parseMegaEvolutions(cleanedPage));
+                specie.put("stage", parseStage(cleanedPage, name));
                 specie.put("capabilities", parseCapabilities(cleanedPage));
-//                specie.put("evolutionChain", parseEvolutionChain(cleanedPage));
-//                specie.put("highAbilities", parseHighAbilities(cleanedPage));
-//                specie.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
-//                specie.put("basicAbilities", parseBasicAbilities(cleanedPage));
-//                specie.put("tutorMoves", parseTutorMoves(cleanedPage));
-//                specie.put("eggMoves", parseEggMoves(cleanedPage));
-//                specie.put("machineMoves", parseMachineMoves(cleanedPage));
-//                specie.put("genderRatio", parseGenderRatio(cleanedPage));
-//                specie.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
-//                specie.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
-//                specie.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
-//                specie.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
-//                specie.put("stats", parseStats(cleanedPage));
-//                specie.put("skills", parseSkills(cleanedPage));
-//                specie.put("height", parseHeight(cleanedPage));
-//                specie.put("weight", parseWeight(cleanedPage));
-//                specie.put("diets", parseCommaSeparatedList(cleanedPage, "Diet"));
-//                specie.put("habitats", parseCommaSeparatedList(cleanedPage, "Habitat"));
+                specie.put("evolutionChain", parseEvolutionChain(cleanedPage));
+                specie.put("highAbilities", parseHighAbilities(cleanedPage));
+                specie.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
+                specie.put("basicAbilities", parseBasicAbilities(cleanedPage));
+                specie.put("tutorMoves", parseTutorMoves(cleanedPage));
+                specie.put("eggMoves", parseEggMoves(cleanedPage));
+                specie.put("machineMoves", parseMachineMoves(cleanedPage));
+                specie.put("genderRatio", parseGenderRatio(cleanedPage));
+                specie.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
+                specie.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
+                specie.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
+                specie.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
+                specie.put("stats", parseStats(cleanedPage));
+                specie.put("skills", parseSkills(cleanedPage));
+                specie.put("height", parseHeight(cleanedPage));
+                specie.put("weight", parseWeight(cleanedPage));
+                specie.put("diets", parseCommaSeparatedList(cleanedPage, "Diet"));
+                specie.put("habitats", parseCommaSeparatedList(cleanedPage, "Habitat"));
                 species.put(name, specie);
-                System.out.println(specie);
+//                System.out.println(specie);
             }
         }
 //        System.out.println(species);
@@ -119,6 +119,8 @@ class SpeciesParser {
         cleanedPage = cleanedPage.replaceAll("Ath ", "Athl");
         // Fix typo in Servine for "Percep," to be "Percep"
         cleanedPage = cleanedPage.replaceAll("Percep,", "Percep");
+        // Fix typo in Arbok for "Carnviore." to be "Carnviore"
+        cleanedPage = cleanedPage.
         return cleanedPage;
     }
 
@@ -488,8 +490,8 @@ class SpeciesParser {
 
     private Map<String, Object> parseEvolutionCondition(String conditions) {
         final Map<String, Object> evolutionCondition = new HashMap<>();
-        if (conditions.trim().isEmpty()) return evolutionCondition;
-        evolutionCondition.put("minLevel", parseMinLevelCondition(conditions));
+        if (conditions.trim().isEmpty()) return null;
+        evolutionCondition.put("level", parseMinLevelCondition(conditions));
         evolutionCondition.put("gender", parseGenderCondition(conditions));
         evolutionCondition.put("timeOfDay", parseTimeOfDayCondition(conditions));
         evolutionCondition.put("heldItem", parseHeldItemCondition(conditions));
@@ -545,8 +547,57 @@ class SpeciesParser {
         return null;
     }
 
+    private List<String> parseMegaTypes(String types) {
+        if (types.trim().equals("Unchanged")) return null;
+        return Arrays.stream(types
+                .split("/"))
+                .map(String::trim)
+                .collect(Collectors.toList());
+    }
+
+    private Integer parseMegaEvolutionStat(String statsString, String stat) {
+        final String statRegex = "(-?\\d+) " + stat;
+        final Matcher statMatcher = Pattern.compile(statRegex).matcher(statsString);
+        if (statMatcher.find()) {
+            return parseInt(statMatcher.group(1));
+        }
+        return null;
+    }
+
+    private Map<String, Integer> parseMegaEvolutionStats(String statsString) {
+        final Map<String, Integer> stats = new HashMap<>();
+        stats.put("attack", parseMegaEvolutionStat(statsString, "Atk"));
+        stats.put("defense", parseMegaEvolutionStat(statsString,"Def"));
+        stats.put("specialAttack", parseMegaEvolutionStat(statsString,"Sp. Atk"));
+        stats.put("specialDefense", parseMegaEvolutionStat(statsString,"Sp. Def"));
+        stats.put("speed", parseMegaEvolutionStat(statsString,"Speed"));
+        return stats;
+    }
+
     private List<Map<String, Object>> parseMegaEvolutions(String page) {
         final List<Map<String, Object>> megaEvolutions = new ArrayList<>();
+        final String megaEvolutionRegex = "Mega *Evolution *(.*)?\\s*" +
+                "Type: *(.*)\\s*" +
+                "Ability: *(.*)\\s*" +
+                "Stats: ((?:.+)\\s*(?:(?:.+)\\s*)?(?:[^M]+)?)";
+        final Matcher megaEvolutionMatcher = Pattern.compile(megaEvolutionRegex).matcher(page);
+        Map<String, Object> megaEvolution;
+        while(megaEvolutionMatcher.find()) {
+            final String typesString = megaEvolutionMatcher.group(2);
+            final String statsString = megaEvolutionMatcher.group(4).replace("\r\n", "");
+            String name = megaEvolutionMatcher.group(1);
+            name = name.isEmpty() ? null : name;
+            final List<String> types = parseMegaTypes(typesString);
+            final String ability = megaEvolutionMatcher.group(3);
+            final Map<String, Integer> stats = parseMegaEvolutionStats(statsString);
+            megaEvolution = new HashMap<>();
+            megaEvolution.put("name", name);
+            megaEvolution.put("types", types);
+            megaEvolution.put("ability", ability);
+            megaEvolution.put("stats", stats);
+            megaEvolutions.add(megaEvolution);
+        }
+        if (megaEvolutions.isEmpty()) return null;
         return megaEvolutions;
     }
 
