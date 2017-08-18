@@ -1,9 +1,15 @@
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class UnitedScraper {
@@ -35,8 +41,10 @@ public class UnitedScraper {
     static private void parsePokedex() throws IOException {
         List<String> speciesPages = getPokedexPages(12, 745);
         SpeciesParser speciesParser = new SpeciesParser();
-        for (String speciesPage: speciesPages) {
-            speciesParser.parse(speciesPage);
-        }
+        JSONObject speciesObject = speciesParser.parse(speciesPages);
+        String speciesData = speciesObject.toString(2);
+        List<String> lines = Collections.singletonList(speciesData);
+        Path file = Paths.get("out/species.json");
+        Files.write(file, lines, Charset.forName("UTF-8"));
     }
 }
