@@ -1,12 +1,10 @@
 import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
@@ -47,26 +45,26 @@ class SpeciesParser {
                 System.out.println(specie);
                 species.put(name, specie);
             } else {
-                specie.put("stage", parseStage(cleanedPage, name));
+//                specie.put("stage", parseStage(cleanedPage, name));
                 specie.put("capabilities", parseCapabilities(cleanedPage));
-                specie.put("evolutionChain", parseEvolutionChain(cleanedPage));
-                specie.put("highAbilities", parseHighAbilities(cleanedPage));
-                specie.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
-                specie.put("basicAbilities", parseBasicAbilities(cleanedPage));
-                specie.put("tutorMoves", parseTutorMoves(cleanedPage));
-                specie.put("eggMoves", parseEggMoves(cleanedPage));
-                specie.put("machineMoves", parseMachineMoves(cleanedPage));
-                specie.put("genderRatio", parseGenderRatio(cleanedPage));
-                specie.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
-                specie.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
-                specie.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
-                specie.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
-                specie.put("stats", parseStats(cleanedPage));
-                specie.put("skills", parseSkills(cleanedPage));
-                specie.put("height", parseHeight(cleanedPage));
-                specie.put("weight", parseWeight(cleanedPage));
-                specie.put("diets", parseCommaSeparatedList(cleanedPage, "Diet"));
-                specie.put("habitats", parseCommaSeparatedList(cleanedPage, "Habitat"));
+//                specie.put("evolutionChain", parseEvolutionChain(cleanedPage));
+//                specie.put("highAbilities", parseHighAbilities(cleanedPage));
+//                specie.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
+//                specie.put("basicAbilities", parseBasicAbilities(cleanedPage));
+//                specie.put("tutorMoves", parseTutorMoves(cleanedPage));
+//                specie.put("eggMoves", parseEggMoves(cleanedPage));
+//                specie.put("machineMoves", parseMachineMoves(cleanedPage));
+//                specie.put("genderRatio", parseGenderRatio(cleanedPage));
+//                specie.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
+//                specie.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
+//                specie.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
+//                specie.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
+//                specie.put("stats", parseStats(cleanedPage));
+//                specie.put("skills", parseSkills(cleanedPage));
+//                specie.put("height", parseHeight(cleanedPage));
+//                specie.put("weight", parseWeight(cleanedPage));
+//                specie.put("diets", parseCommaSeparatedList(cleanedPage, "Diet"));
+//                specie.put("habitats", parseCommaSeparatedList(cleanedPage, "Habitat"));
                 species.put(name, specie);
                 System.out.println(specie);
             }
@@ -205,7 +203,7 @@ class SpeciesParser {
 
     private List<String> parseCommaSeparatedList(String text, String name) {
         final List<String> items;
-        final String p = name + "\\s*:\\s*((?:\\w+)(?:,\\s*\\w+)*)";
+        final String p = name + " *:(.*)";
         final Matcher matcher = Pattern.compile(p).matcher(text);
         if (matcher.find()) {
             String itemsString = matcher.group(1);
@@ -553,6 +551,18 @@ class SpeciesParser {
     }
 
     private List<String> parseNaturewalk(String capabilityInformation) {
+        final String naturewalkRegex = "[Nn]aturewalk *\\((.*)\\)";
+        final Matcher naturewalkMatcher = Pattern.compile(naturewalkRegex).matcher(capabilityInformation);
+        if (naturewalkMatcher.find()) {
+            // Trim all of the elements in a list of strings
+            // Credit: https://stackoverflow.com/questions/36430727/whats-the-best-way-to-trim-all-elements-in-a-liststring
+            return Arrays.stream(naturewalkMatcher.group(1)
+                    .split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+        }
         return null;
     }
+
+
 }
