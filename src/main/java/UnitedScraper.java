@@ -24,7 +24,7 @@ public class UnitedScraper {
     }
 
     static private List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
-        final String pokedexPath = "src\\main\\resources\\pokedex.pdf";
+        final String pokedexPath = "src" + File.separatorChar + "main" + File.separatorChar + "resources" + File.separatorChar + "pokedex.pdf";
         File file = new File(pokedexPath);
         PDDocument pokedex = PDDocument.load(file);
         List<String> pages = new ArrayList<>();
@@ -45,7 +45,7 @@ public class UnitedScraper {
     }
 
     static private String getCoreText(int start, int end) throws IOException {
-        final String corePath = "src\\main\\resources\\core.pdf";
+        final String corePath = "src" + File.separatorChar + "main" + File.separatorChar + "resources" + File.separatorChar + "core.pdf";
         final File file = new File(corePath);
         final PDDocument core = PDDocument.load(file);
         final PDFTextStripper stripper = new PDFTextStripper();
