@@ -631,7 +631,7 @@ class SpeciesParser {
     }
 
     private String parseEvolvesFrom(String page, int currentStage) {
-        final String evolvesFromRegex = (currentStage - 1) + " *- *(\\w*)";
+        final String evolvesFromRegex = (currentStage - 1) + " *- *([\\w-]*)";
         final Matcher evolvesFromMatcher = Pattern.compile(evolvesFromRegex).matcher(page);
         if (evolvesFromMatcher.find()) {
             return evolvesFromMatcher.group(1);
@@ -648,7 +648,7 @@ class SpeciesParser {
     }
 
     private Map<String, Object> parseEvolvesTo(String page, int currentStage) {
-        final String evolvesToRegex = (currentStage + 1) + " *- *(\\w*) *(.*)";
+        final String evolvesToRegex = (currentStage + 1) + " *- *([\\w-]*) *(.*)";
         final Matcher evolvesToMatcher = Pattern.compile(evolvesToRegex).matcher(page);
         final Map<String, Object> evolvesTo = new HashMap<>();
         while (evolvesToMatcher.find()) {
