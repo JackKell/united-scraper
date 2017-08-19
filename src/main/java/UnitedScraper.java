@@ -23,7 +23,7 @@ public class UnitedScraper {
         return getPokedexPages(12, 745);
     }
 
-    static private List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
+    static List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
         final String pokedexPath = "src" + File.separatorChar + "main" + File.separatorChar + "resources" + File.separatorChar + "pokedex.pdf";
         File file = new File(pokedexPath);
         PDDocument pokedex = PDDocument.load(file);
