@@ -15,6 +15,7 @@ import java.util.List;
 public class UnitedScraper {
     public static void main(String[] args) throws IOException {
         parsePokedex();
+        parseAbilities();
     }
 
     static private List<String> getPokedexPages() throws IOException {
@@ -51,5 +52,27 @@ public class UnitedScraper {
         List<String> lines = Collections.singletonList(speciesData);
         Path file = Paths.get("out/species.json");
         Files.write(file, lines, Charset.forName("UTF-8"));
+    }
+
+    static private void parseAbilities() throws IOException {
+        String abilitiesText = getAbilitiesText();
+        AbilitiesParser abilitiesParser = new AbilitiesParser();
+        JSONObject abilitiesObject = abilitiesParser.parse(abilitiesText);
+        String speciesData = abilitiesObject.toString(2);
+        List<String> lines = Collections.singletonList(speciesData);
+        Path file = Paths.get("out/abilities.json");
+        Files.write(file, lines, Charset.forName("UTF-8"));
+    }
+
+    public static String getAbilitiesText() throws IOException {
+        final String pokedexPath = "src\\main\\resources\\core.pdf";
+        final File file = new File(pokedexPath);
+        final PDDocument core = PDDocument.load(file);
+        final PDFTextStripper stripper = new PDFTextStripper();
+        stripper.setStartPage(311);
+        stripper.setEndPage(336);
+        String abilitiesText = stripper.getText(core);
+        core.close();
+        return abilitiesText;
     }
 }
