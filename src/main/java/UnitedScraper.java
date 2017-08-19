@@ -14,9 +14,10 @@ import java.util.List;
 
 public class UnitedScraper {
     public static void main(String[] args) throws IOException {
-        parsePokedex();
-        parseAbilities();
-        parseMoves();
+//        parsePokedex();
+//        parseAbilities();
+//        parseMoves();
+        parseCapabilities();
     }
 
     static private List<String> getPokedexPages() throws IOException {
@@ -64,33 +65,42 @@ public class UnitedScraper {
         return getCoreText(311, 336);
     }
 
+    static private String getCapabilitiesText() throws IOException {
+        return getCoreText(303, 308);
+    }
+
+    static private void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
+        final String objectData = jsonObject.toString(2);
+        final List<String> lines = Collections.singletonList(objectData);
+        final Path file = Paths.get(path);
+        Files.write(file, lines, Charset.forName("UTF-8"));
+    }
+
     static private void parsePokedex() throws IOException {
         final List<String> speciesPages = getPokedexPages();
         final SpeciesParser speciesParser = new SpeciesParser();
         final JSONObject speciesObject = speciesParser.parse(speciesPages);
-        final String speciesData = speciesObject.toString(2);
-        final List<String> lines = Collections.singletonList(speciesData);
-        final Path file = Paths.get("out/species.json");
-        Files.write(file, lines, Charset.forName("UTF-8"));
+        saveJSONObject(speciesObject, "out/species.json");
     }
 
     static private void parseAbilities() throws IOException {
         final String abilitiesText = getAbilitiesText();
         final AbilitiesParser abilitiesParser = new AbilitiesParser();
         final JSONObject abilitiesObject = abilitiesParser.parse(abilitiesText);
-        final String speciesData = abilitiesObject.toString(2);
-        final List<String> lines = Collections.singletonList(speciesData);
-        final Path file = Paths.get("out/abilities.json");
-        Files.write(file, lines, Charset.forName("UTF-8"));
+        saveJSONObject(abilitiesObject, "out/abilities.json");
     }
 
     static private void parseMoves() throws IOException {
         final String movesText = getMovesText();
         final MovesParser movesParser = new MovesParser();
         final JSONObject movesObject = movesParser.parse(movesText);
-        final String movesData = movesObject.toString(2);
-        final List<String> lines = Collections.singletonList(movesData);
-        final Path file = Paths.get("out/moves.json");
-        Files.write(file, lines, Charset.forName("UTF-8"));
+        saveJSONObject(movesObject, "out/moves.json");
+    }
+
+    static private void parseCapabilities() throws IOException {
+        final String capabilitiesText = getCapabilitiesText();
+        final CapabilitiesParser capabilitiesParser = new CapabilitiesParser();
+        final JSONObject capabilitiesObject = capabilitiesParser.parse(capabilitiesText);
+        saveJSONObject(capabilitiesObject, "out/capabilities.json");
     }
 }
