@@ -8,12 +8,11 @@ import java.util.regex.Pattern;
 class CapabilitiesParser {
     JSONObject parse(String capabilitiesText) {
         final String cleanText = clean(capabilitiesText);
-        System.out.println(cleanText);
+//        System.out.println(cleanText);
         JSONObject capabilities = new JSONObject();
         final String capabilityRegex = "([\\w ]*): +((?:.*\r\n)*?)(?=[\\w ]*:)";
         final Matcher capabilityMatcher = Pattern.compile(capabilityRegex).matcher(cleanText);
         while (capabilityMatcher.find()) {
-            final String capabilityText = capabilityMatcher.group(0);
             final String name = capabilityMatcher.group(1).trim();
             final String description = capabilityMatcher.group(2).replaceAll("\r\n", "").trim();
             final Map<String, Object> capability = new HashMap<>();
