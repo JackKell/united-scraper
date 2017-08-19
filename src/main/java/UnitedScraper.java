@@ -14,9 +14,9 @@ import java.util.List;
 
 public class UnitedScraper {
     public static void main(String[] args) throws IOException {
-//        parsePokedex();
-//        parseAbilities();
-//        parseMoves();
+        parsePokedex();
+        parseAbilities();
+        parseMoves();
         parseCapabilities();
     }
 
