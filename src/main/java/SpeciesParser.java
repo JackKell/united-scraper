@@ -205,13 +205,13 @@ class SpeciesParser {
 
     private List<String> parseSlashSeparatedList(String text, String name) {
         final List<String> items = new ArrayList<>();
-        final String namedSlashSeparatedListRegex = name + "\\s*:\\s*(\\w*)(?:\\s*\\/\\s*(\\w*))?";
+        final String namedSlashSeparatedListRegex = name + "\\s*:\\s*([\\w \\d]*)(?:\\s*\\/\\s*([\\w \\d]*))?";
         final Matcher matcher = Pattern.compile(namedSlashSeparatedListRegex).matcher(text);
         if (matcher.find()) {
             final String item1 = matcher.group(1);
             final String item2 = matcher.group(2);
-            items.add(item1);
-            if (item2 != null) items.add(item2);
+            items.add(item1.trim());
+            if (item2 != null) items.add(item2.trim());
         } else {
             throw new Error("No match was found in:\n" + text + "\n For regex string " + namedSlashSeparatedListRegex);
         }
