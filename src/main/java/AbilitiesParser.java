@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 class AbilitiesParser {
     JSONObject parse(String abilitiesText) {
         final String cleanText = clean(abilitiesText);
-        System.out.println(cleanText);
+//        System.out.println(cleanText);
         JSONObject abilities = new JSONObject();
         final String abilityRegex = "Ability: *(.+)\\s[\\s\\w\\W]*?(?=Ability:|$)";
         final Matcher abilityMatcher = Pattern.compile(abilityRegex).matcher(cleanText);

@@ -16,12 +16,12 @@ public class UnitedScraper {
     public static void main(String[] args) throws IOException {
         parsePokedex();
         parseAbilities();
+        parseMoves();
     }
 
     static private List<String> getPokedexPages() throws IOException {
         return getPokedexPages(12, 745);
     }
-
 
     static private List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
         final String pokedexPath = "src\\main\\resources\\pokedex.pdf";
@@ -44,35 +44,53 @@ public class UnitedScraper {
         return pages;
     }
 
+    static private String getCoreText(int start, int end) throws IOException {
+        final String corePath = "src\\main\\resources\\core.pdf";
+        final File file = new File(corePath);
+        final PDDocument core = PDDocument.load(file);
+        final PDFTextStripper stripper = new PDFTextStripper();
+        stripper.setStartPage(start);
+        stripper.setEndPage(end);
+        final String text = stripper.getText(core);
+        core.close();
+        return text;
+    }
+
+    static private String getMovesText() throws IOException {
+        return getCoreText(346, 435);
+    }
+
+    static private String getAbilitiesText() throws IOException {
+        return getCoreText(311, 336);
+    }
+
     static private void parsePokedex() throws IOException {
-        List<String> speciesPages = getPokedexPages();
-        SpeciesParser speciesParser = new SpeciesParser();
-        JSONObject speciesObject = speciesParser.parse(speciesPages);
-        String speciesData = speciesObject.toString(2);
-        List<String> lines = Collections.singletonList(speciesData);
-        Path file = Paths.get("out/species.json");
+        final List<String> speciesPages = getPokedexPages();
+        final SpeciesParser speciesParser = new SpeciesParser();
+        final JSONObject speciesObject = speciesParser.parse(speciesPages);
+        final String speciesData = speciesObject.toString(2);
+        final List<String> lines = Collections.singletonList(speciesData);
+        final Path file = Paths.get("out/species.json");
         Files.write(file, lines, Charset.forName("UTF-8"));
     }
 
     static private void parseAbilities() throws IOException {
-        String abilitiesText = getAbilitiesText();
-        AbilitiesParser abilitiesParser = new AbilitiesParser();
-        JSONObject abilitiesObject = abilitiesParser.parse(abilitiesText);
-        String speciesData = abilitiesObject.toString(2);
-        List<String> lines = Collections.singletonList(speciesData);
-        Path file = Paths.get("out/abilities.json");
+        final String abilitiesText = getAbilitiesText();
+        final AbilitiesParser abilitiesParser = new AbilitiesParser();
+        final JSONObject abilitiesObject = abilitiesParser.parse(abilitiesText);
+        final String speciesData = abilitiesObject.toString(2);
+        final List<String> lines = Collections.singletonList(speciesData);
+        final Path file = Paths.get("out/abilities.json");
         Files.write(file, lines, Charset.forName("UTF-8"));
     }
 
-    public static String getAbilitiesText() throws IOException {
-        final String pokedexPath = "src\\main\\resources\\core.pdf";
-        final File file = new File(pokedexPath);
-        final PDDocument core = PDDocument.load(file);
-        final PDFTextStripper stripper = new PDFTextStripper();
-        stripper.setStartPage(311);
-        stripper.setEndPage(336);
-        String abilitiesText = stripper.getText(core);
-        core.close();
-        return abilitiesText;
+    static private void parseMoves() throws IOException {
+        final String movesText = getMovesText();
+        final MovesParser movesParser = new MovesParser();
+        final JSONObject movesObject = movesParser.parse(movesText);
+        final String movesData = movesObject.toString(2);
+        final List<String> lines = Collections.singletonList(movesData);
+        final Path file = Paths.get("out/moves.json");
+        Files.write(file, lines, Charset.forName("UTF-8"));
     }
 }
