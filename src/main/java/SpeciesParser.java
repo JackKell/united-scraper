@@ -45,9 +45,11 @@ class SpeciesParser {
                 species.put(name, specie);
             } else {
                 specie.put("megaEvolutions", parseMegaEvolutions(cleanedPage));
+                int stage = parseStage(cleanedPage, name);
                 specie.put("stage", parseStage(cleanedPage, name));
+                specie.put("evolvesFrom", parseEvolvesFrom(cleanedPage, stage));
+                specie.put("evolvesTo", parseEvolvesTo(cleanedPage, stage));
                 specie.put("capabilities", parseCapabilities(cleanedPage));
-                specie.put("evolutionChain", parseEvolutionChain(cleanedPage));
                 specie.put("highAbilities", parseHighAbilities(cleanedPage));
                 specie.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
                 specie.put("basicAbilities", parseBasicAbilities(cleanedPage));
@@ -120,7 +122,20 @@ class SpeciesParser {
         // Fix typo in Servine for "Percep," to be "Percep"
         cleanedPage = cleanedPage.replaceAll("Percep,", "Percep");
         // Fix typo in Arbok for "Carnviore." to be "Carnviore"
-        cleanedPage = cleanedPage.
+        cleanedPage = cleanedPage.replaceAll("Carnviore\\.", "Carnviore");
+        // Fix typo in "QUIILLADIN" to be "Quilladin"
+        cleanedPage = cleanedPage.replaceAll("QUIILLADIN", "Quilladin");
+        // Fix typo "NIDORAN (F)" to be "NIDORAN F"
+        cleanedPage = cleanedPage.replaceAll("NIDORAN \\(F\\)", "NIDORANF");
+        cleanedPage = cleanedPage.replaceAll("Nidoran F", "Nidoranf");
+        // Fix typo "NIDORAN (M)" to be "NIDORAN M"
+        cleanedPage = cleanedPage.replaceAll("NIDORAN \\(M\\)", "NIDORANM");
+        cleanedPage = cleanedPage.replaceAll("Nidoran M", "Nidoranm");
+        // Fix "Mime Jr." to be "Mime jr."
+        cleanedPage = cleanedPage.replaceAll("[Mm][Ii][Mm][Ee] [Jj][Rr]", "Mimejr");
+        cleanedPage = cleanedPage.replaceAll("M[Rr]\\. M[Ii][Mm][Ee]", "Mr.mime");
+        // Fix typo on Poliwhirl page
+        cleanedPage = cleanedPage.replaceAll("3 - Holding", "3 - Politoed Holding");
         return cleanedPage;
     }
 
@@ -544,7 +559,7 @@ class SpeciesParser {
         if (stageMatcher.find()) {
             return parseInt(stageMatcher.group(1));
         }
-        return null;
+        throw new Error("All pokemon species must have stage to parse\n" + page);
     }
 
     private List<String> parseMegaTypes(String types) {
@@ -615,5 +630,38 @@ class SpeciesParser {
         return null;
     }
 
+    private String parseEvolvesFrom(String page, int currentStage) {
+        final String evolvesFromRegex = (currentStage - 1) + " *- *(\\w*)";
+        final Matcher evolvesFromMatcher = Pattern.compile(evolvesFromRegex).matcher(page);
+        if (evolvesFromMatcher.find()) {
+            return evolvesFromMatcher.group(1);
+        }
+        return null;
+    }
 
+    private String parseEvolutionTrigger(Map<String, Object> conditions) {
+        if (conditions == null) return null;
+        if (conditions.get("interact") != null) return "interact";
+        else if (conditions.get("useItem") != null) return "useItem";
+        else if (conditions.get("level") != null) return "level";
+        else return null;
+    }
+
+    private Map<String, Object> parseEvolvesTo(String page, int currentStage) {
+        final String evolvesToRegex = (currentStage + 1) + " *- *(\\w*) *(.*)";
+        final Matcher evolvesToMatcher = Pattern.compile(evolvesToRegex).matcher(page);
+        final Map<String, Object> evolvesTo = new HashMap<>();
+        while (evolvesToMatcher.find()) {
+            final Map<String, Object> evolution = new HashMap<>();
+            final String name = evolvesToMatcher.group(1).trim();
+            final Map<String, Object> conditions = parseEvolutionCondition(evolvesToMatcher.group(2));
+            final String trigger = parseEvolutionTrigger(conditions);
+            evolution.put("name", name);
+            evolution.put("conditions", conditions);
+            evolution.put("trigger", trigger);
+            evolvesTo.put(name, evolution);
+        }
+        if (evolvesTo.isEmpty()) return null;
+        return evolvesTo;
+    }
 }
