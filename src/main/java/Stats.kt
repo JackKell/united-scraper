@@ -1,14 +1,14 @@
 class Stats {
-    lateinit var specialDefense: String
+    var specialDefense = 0
         private set
-    lateinit var defense: String
+    var defense = 0
         private set
-    lateinit var attack: String
+    var attack = 0
         private set
-    lateinit var hp: String
+    var hp = 0
         private set
-    lateinit var specialAttack: String
+    var specialAttack = 0
         private set
-    lateinit var speed: String
+    var speed = 0
         private set
 }

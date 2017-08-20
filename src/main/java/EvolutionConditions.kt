@@ -1,5 +1,5 @@
 class EvolutionConditions {
-    var level: String? = null
+    var level: Int? = null
         private set
     var heldItem: String? = null
         private set

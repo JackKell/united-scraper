@@ -1,4 +1,6 @@
-class Pokemon {
+class Specie {
+    var averageHatchRate: Int? = 0
+        private set
     lateinit var types: Array<String>
         private set
     lateinit var capabilities: Capabilities
@@ -11,7 +13,7 @@ class Pokemon {
         private set
     lateinit var eggGroups: Array<String>
         private set
-    // map of level to list of moves
+    // map of level to list of moves // todo: should level keys be integers?
     lateinit var levelUpMoves: Map<String, List<String>>
         private set
     // map of pokemon name to evolution conditions
@@ -23,7 +25,7 @@ class Pokemon {
         private set
     lateinit var diets: Array<String>
         private set
-    lateinit var evolvesFrom: String // pokemon name
+    var evolvesFrom: String? = null // pokemon name
         private set
     // map of move name to preconditions
     lateinit var tutorMoves: Map<String, HeartScaleRequirement>
