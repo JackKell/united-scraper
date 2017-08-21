@@ -62,10 +62,19 @@ class MovesParser {
         throw new Error("All moves should have a type\n" + moveText);
     }
 
-    // TODO: make frequency an object
-    private String parseFrequency(String moveText) {
-        final String frequency = parseNamedString("Frequency:", moveText);
-        if (frequency != null) {
+    private Map<String, Object> parseFrequency(String moveText) {
+        final String frequencyRegex = "Frequency: +([\\w\\-]+)(?: [Xx](\\d))?";
+        final Matcher frequencyMatcher = Pattern.compile(frequencyRegex).matcher(moveText);
+        if (frequencyMatcher.find()) {
+            Map<String, Object> frequency = new HashMap<>();
+            final String type = frequencyMatcher.group(1);
+            frequency.put("type", type);
+            final String limit = frequencyMatcher.group(2);
+            if (limit != null) {
+                frequency.put("limit", parseInt(limit));
+            } else if (type.equals("Daily") || type.equals("Scene")) {
+                frequency.put("limit", 1);
+            }
             return frequency;
         }
         throw new Error("All moves should have a frequency\n" + moveText);
