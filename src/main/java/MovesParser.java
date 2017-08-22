@@ -24,7 +24,7 @@ class MovesParser {
         final Matcher moveMatcher = Pattern.compile(moveRegex).matcher(cleanText);
         while (moveMatcher.find()) {
             final String moveText = moveMatcher.group(0);
-            System.out.println(moveText);
+//            System.out.println(moveText);
             final String moveName = moveMatcher.group(1).trim();
             final Map<String, Object> move = new HashMap<>();
             move.put("name", moveName);
@@ -40,6 +40,7 @@ class MovesParser {
             move.put("contestType", parseContestType(moveText));
             move.put("contestEffect", parseContestEffect(moveText));
             move.put("special", parseSpecial(moveText));
+            move.put("setup", parseSetup(moveText));
             move.put("effect", parseEffect(moveText));
             moves.put(moveName, move);
         }
@@ -173,9 +174,18 @@ class MovesParser {
         return parseNamedString("Special:", moveText);
     }
 
-    // TODO: make Effect a simple object to handle Set-Up Effect and Resolution Effect (e.g. Geomancy)
+    private String parseSetup(String moveText) {
+        final String setupRegex = "Set-Up Effect: ((?:(?:.*)\\s)*?)(?=Resolution Effect:)";
+        final Matcher setupMatcher = Pattern.compile(setupRegex).matcher(moveText);
+        if (setupMatcher.find()) {
+            final String effect = setupMatcher.group(1).replaceAll("\r\n", "").trim();
+            return effect;
+        }
+        return null;
+    }
+
     private String parseEffect(String moveText) {
-        final String effectRegex = "\r\nEffect: ((?:(?:.*)\\s)*?)(?=Contest Type:)";
+        final String effectRegex = "(?:\r\n|Resolution )Effect: ((?:(?:.*)\\s)*?)(?=Contest Type:)";
         final Matcher effectMatcher = Pattern.compile(effectRegex).matcher(moveText);
         if (effectMatcher.find()) {
             final String effect = effectMatcher.group(1).replaceAll("\r\n", "").trim();
