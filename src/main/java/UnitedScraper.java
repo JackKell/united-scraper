@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static java.io.File.separator;
+
 public class UnitedScraper {
     public static void main(String[] args) throws IOException {
         parseSpecies();
@@ -28,28 +30,27 @@ public class UnitedScraper {
 
     @SuppressWarnings("WeakerAccess")
     static List<String> getSpeciePages(int startPageNumber, int endPageNumber) throws IOException {
-        final String pokedexPath = "src" + File.separatorChar + "main" + File.separatorChar + "resources" + File.separatorChar + "pokedex.pdf";
-        File file = new File(pokedexPath);
-        PDDocument pokedex = PDDocument.load(file);
+        final String speciesDocumentPath = "src" + separator + "main" + separator + "resources" + separator + "species.pdf";
+        File file = new File(speciesDocumentPath);
+        PDDocument speciesDocument = PDDocument.load(file);
         List<String> pages = new ArrayList<>();
         PDFTextStripper stripper = new PDFTextStripper();
-        // Start at page 12 with Bulbasaur
         for (int pageNumber = startPageNumber; pageNumber <= endPageNumber; pageNumber++) {
-            // Skip the legendaries page
+            // Skip the legendary description page
             if (pageNumber == 682) {
                 continue;
             }
             stripper.setStartPage(pageNumber);
             stripper.setEndPage(pageNumber);
-            String page = stripper.getText(pokedex);
+            String page = stripper.getText(speciesDocument);
             pages.add(page);
         }
-        pokedex.close();
+        speciesDocument.close();
         return pages;
     }
 
     static private String getCoreText(int start, int end) throws IOException {
-        final String corePath = "src" + File.separatorChar + "main" + File.separatorChar + "resources" + File.separatorChar + "core.pdf";
+        final String corePath = "src" + separator + "main" + separator + "resources" + separator + "core.pdf";
         final File file = new File(corePath);
         final PDDocument core = PDDocument.load(file);
         final PDFTextStripper stripper = new PDFTextStripper();
@@ -87,34 +88,34 @@ public class UnitedScraper {
         final List<String> speciesPages = getSpeciePages();
         final SpeciesParser speciesParser = new SpeciesParser();
         final JSONObject speciesObject = speciesParser.parse(speciesPages);
-        saveJSONObject(speciesObject, "out/species.json");
+        saveJSONObject(speciesObject, "out" + separator + "species.json");
     }
 
     static private void parseAbilities() throws IOException {
         final String abilitiesText = getAbilitiesText();
         final AbilitiesParser abilitiesParser = new AbilitiesParser();
         final JSONObject abilitiesObject = abilitiesParser.parse(abilitiesText);
-        saveJSONObject(abilitiesObject, "out/abilities.json");
+        saveJSONObject(abilitiesObject, "out" + separator + "abilities.json");
     }
 
     static private void parseMoves() throws IOException {
         final String movesText = getMovesText();
         final MovesParser movesParser = new MovesParser();
         final JSONObject movesObject = movesParser.parse(movesText);
-        saveJSONObject(movesObject, "out/moves.json");
+        saveJSONObject(movesObject, "out" + separator + "moves.json");
     }
 
     static private void parseCapabilities() throws IOException {
         final String capabilitiesText = getCapabilitiesText();
         final CapabilitiesParser capabilitiesParser = new CapabilitiesParser();
         final JSONObject capabilitiesObject = capabilitiesParser.parse(capabilitiesText);
-        saveJSONObject(capabilitiesObject, "out/capabilities.json");
+        saveJSONObject(capabilitiesObject, "out" + separator + "capabilities.json");
     }
 
     static private void parseEdges() throws IOException {
         final String edgesText = getEdgesText();
         final EdgesParser edgesParser = new EdgesParser();
         final JSONObject edgesObject = edgesParser.parse(edgesText);
-        saveJSONObject(edgesObject, "out/edges.json");
+        saveJSONObject(edgesObject, "out" + separator + "edges.json");
     }
 }
