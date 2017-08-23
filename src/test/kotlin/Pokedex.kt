@@ -5,7 +5,7 @@ import com.squareup.moshi.Types
 object Pokedex {
 
     private val species: Map<String, Specie> by lazy {
-        val pages = UnitedScraper.getPokedexPages(12, 745)
+        val pages = UnitedScraper.getSpeciePages()
         val parser = SpeciesParser()
         val jsonObject = parser.parse(pages)
         val moshi = Moshi.Builder().build()

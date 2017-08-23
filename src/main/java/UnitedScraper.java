@@ -14,18 +14,20 @@ import java.util.List;
 
 public class UnitedScraper {
     public static void main(String[] args) throws IOException {
-        parsePokedex();
+        parseSpecies();
         parseAbilities();
         parseMoves();
         parseCapabilities();
         parseEdges();
     }
 
-    static private List<String> getPokedexPages() throws IOException {
-        return getPokedexPages(12, 745);
+    @SuppressWarnings("WeakerAccess")
+    static List<String> getSpeciePages() throws IOException {
+        return getSpeciePages(12, 745);
     }
 
-    static List<String> getPokedexPages(int startPageNumber, int endPageNumber) throws IOException {
+    @SuppressWarnings("WeakerAccess")
+    static List<String> getSpeciePages(int startPageNumber, int endPageNumber) throws IOException {
         final String pokedexPath = "src" + File.separatorChar + "main" + File.separatorChar + "resources" + File.separatorChar + "pokedex.pdf";
         File file = new File(pokedexPath);
         PDDocument pokedex = PDDocument.load(file);
@@ -81,8 +83,8 @@ public class UnitedScraper {
         Files.write(file, lines, Charset.forName("UTF-8"));
     }
 
-    static private void parsePokedex() throws IOException {
-        final List<String> speciesPages = getPokedexPages();
+    static private void parseSpecies() throws IOException {
+        final List<String> speciesPages = getSpeciePages();
         final SpeciesParser speciesParser = new SpeciesParser();
         final JSONObject speciesObject = speciesParser.parse(speciesPages);
         saveJSONObject(speciesObject, "out/species.json");
