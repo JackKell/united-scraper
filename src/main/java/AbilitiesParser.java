@@ -49,18 +49,18 @@ class AbilitiesParser extends BaseParser {
         final Matcher effectMatcher = Pattern.compile(effectRegex).matcher(abilityText);
         if (effectMatcher.find()) {
             String effect = effectMatcher.group(1);
-            effect = effect.replaceAll("\r\n", "").trim().replaceAll("  ", " ");
+            effect = consolidateLinesAndSpaces(effect);
             return effect;
         }
         return null;
     }
 
     private String parseTrigger(String abilityText) {
-        final String triggerRegex = "Trigger: ([\\w\\s-]*)\\n(?=[\\w ]*Effect:)";
+        final String triggerRegex = "Trigger: ([\\w\\s-]*)[\r\n]+(?=[\\w ]*Effect:)";
         final Matcher triggerMatcher = Pattern.compile(triggerRegex).matcher(abilityText);
         if (triggerMatcher.find()) {
             String trigger = triggerMatcher.group(1);
-            trigger = trigger.replaceAll("\r\n", "").trim().replaceAll("  ", " ");
+            trigger = consolidateLinesAndSpaces(trigger);
             return trigger;
         }
         return null;
@@ -69,11 +69,11 @@ class AbilitiesParser extends BaseParser {
     protected String clean(String text) {
         String cleanText = text;
         // Remove all "Indices and Reference"
-        cleanText = cleanText.replaceAll("Indices and Reference\r\n", "");
+        cleanText = cleanText.replaceAll("Indices and Reference\\s+", "");
         // Remove all page numbers
-        cleanText = cleanText.replaceAll("\\d{3}\r\n", "");
+        cleanText = cleanText.replaceAll("\\d{3}[\r\n]+", "");
         // Remove all list range titles
-        cleanText = cleanText.replaceAll("Ability List: *\\w–\\w\r\n", "");
+        cleanText = cleanText.replaceAll("Ability List: *\\w–\\w[\r\n]+", "");
         // Fix typo of "At Will" to be "At-Will"
         cleanText = cleanText.replaceAll("At Will", "At-Will");
         // Change all special characters

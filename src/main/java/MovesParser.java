@@ -160,17 +160,17 @@ class MovesParser extends BaseParser {
         final String setupRegex = "Set-Up Effect: ((?:(?:.*)\\s)*?)(?=Resolution Effect:)";
         final Matcher setupMatcher = Pattern.compile(setupRegex).matcher(moveText);
         if (setupMatcher.find()) {
-            final String effect = setupMatcher.group(1).replaceAll("\r\n", "").trim();
+            final String effect = consolidateLines(setupMatcher.group(1));
             return effect;
         }
         return null;
     }
 
     private String parseEffect(String moveText) {
-        final String effectRegex = "(?:\r\n|Resolution )Effect: ((?:(?:.*)\\s)*?)(?=Contest Type:)";
+        final String effectRegex = "(?:[\r\n]+|Resolution )Effect: ((?:(?:.*)\\s)*?)(?=Contest Type:)";
         final Matcher effectMatcher = Pattern.compile(effectRegex).matcher(moveText);
         if (effectMatcher.find()) {
-            final String effect = effectMatcher.group(1).replaceAll("\r\n", "").trim();
+            final String effect = consolidateLines(effectMatcher.group(1));
             if (effect.equals("None")) return null;
             return effect;
         }
@@ -180,21 +180,12 @@ class MovesParser extends BaseParser {
     protected String clean(String text) {
         String cleanText = text;
         // Remove all "Indices and Reference"
-        cleanText = cleanText.replaceAll("Indices and Reference\r\n", "");
+        cleanText = cleanText.replaceAll("Indices and Reference\\s+", "");
         // Remove all page numbers
-        cleanText = cleanText.replaceAll("\\d{3}\r\n", "");
+        cleanText = cleanText.replaceAll("\\d{3}[\r\n]+", "");
         // Remove all Type Moves titles
-        cleanText = cleanText.replaceAll("\\w* Moves\r\n", "");
-        // Change all special characters
-        cleanText = cleanText.replaceAll("–", "-");
-        cleanText = cleanText.replaceAll(",", ",");
-        cleanText = cleanText.replaceAll("“", "\"");
-        cleanText = cleanText.replaceAll("”", "\"");
-        cleanText = cleanText.replaceAll("’", "'");
-        cleanText = cleanText.replaceAll("¼", "1/4");
-        cleanText = cleanText.replaceAll("½", "1/2");
-        cleanText = cleanText.replaceAll("¾", "3/4");
-        cleanText = cleanText.replaceAll("\\u2019", "'");
+        cleanText = cleanText.replaceAll("\\w* Moves[\r\n]+", "");
+        cleanText = cleanSpecialCharacters(cleanText);
         // Fix werid "--" to be "None"
         cleanText = cleanText.replaceAll("--", "None");
         // Fix typo in "Land's Wrath"
@@ -225,7 +216,7 @@ class MovesParser extends BaseParser {
         // Reformat All Cardinally Adjacent Targets
         cleanText = cleanText.replaceAll("All Cardinally Adjacent Targets", "CAT");
         // Fix lone range values (e.g. Spider Web)
-        cleanText = cleanText.replaceAll("(Range: )(\\d+\r\n)", "$1" + singleTargetName + " $2");
+        cleanText = cleanText.replaceAll("(Range: )(\\d+[\r\n]+)", "$1" + singleTargetName + " $2");
         // Reformat "range, Blast size" to be "Blast size range"
         cleanText = cleanText.replaceAll("(\\d+), (Blast \\d+)", "$2 $1");
         return cleanText;

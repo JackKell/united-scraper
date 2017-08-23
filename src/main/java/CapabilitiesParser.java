@@ -10,11 +10,11 @@ class CapabilitiesParser extends BaseParser {
         final String cleanText = clean(capabilitiesText);
 //        System.out.println(cleanText);
         JSONObject capabilities = new JSONObject();
-        final String capabilityRegex = "([\\w ]*): +((?:.*\r\n)*?)(?=[\\w ]*:)";
+        final String capabilityRegex = "([\\w ]*): +((?:.*[\r\n])*?)(?=[\\w ]*:)";
         final Matcher capabilityMatcher = Pattern.compile(capabilityRegex).matcher(cleanText);
         while (capabilityMatcher.find()) {
             final String name = capabilityMatcher.group(1).trim();
-            final String description = capabilityMatcher.group(2).replaceAll("\r\n", "").trim();
+            final String description = consolidateLines(capabilityMatcher.group(2));
             final Map<String, Object> capability = new HashMap<>();
             capability.put("name", name);
             capability.put("description", description);
@@ -26,9 +26,9 @@ class CapabilitiesParser extends BaseParser {
     protected String clean(String text) {
         String cleanText = text;
         // Remove all "Indices and Reference"
-        cleanText = cleanText.replaceAll("Indices and Reference\r\n", "");
+        cleanText = cleanText.replaceAll("Indices and Reference\\s+", "");
         // Remove all page numbers
-        cleanText = cleanText.replaceAll("\\d{3}\r\n", "");
+        cleanText = cleanText.replaceAll("\\d{3}[\r\n]+", "");
         // Remove all list range titles
         cleanText = cleanText.replaceAll("Chapter 10:(.*\\s)*?(?=Alluring:)", "");
         // Change all special characters
