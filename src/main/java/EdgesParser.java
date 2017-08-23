@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class EdgesParser {
-    JSONObject parse(String edgesText) {
+class EdgesParser extends BaseParser {
+    public JSONObject parse(String edgesText) {
         final String cleanText = clean(edgesText);
 //        System.out.println(cleanText);
         final JSONObject edges = new JSONObject();
@@ -32,7 +32,7 @@ class EdgesParser {
         return null;
     }
 
-    private String clean(String edgesText) {
+    protected String clean(String edgesText) {
         String cleanText = edgesText;
         // Remove page subject headers and page numbers
         cleanText = cleanText.replaceAll("Skills, Edges, Feats\\s+\\d{2}\\s+", "");
@@ -46,15 +46,7 @@ class EdgesParser {
         cleanText = cleanText.replaceAll("(.*\\s+(?=Prerequisites))", "Edge: $1");
         // Fix all cases of "Prerequisite:" to "Prerequisites:"
         cleanText = cleanText.replaceAll("Prerequisite:", "Prerequisites:");
-        // Change all special characters
-        cleanText = cleanText.replaceAll("–", "-");
-        cleanText = cleanText.replaceAll(",", ",");
-        cleanText = cleanText.replaceAll("“", "\"");
-        cleanText = cleanText.replaceAll("”", "\"");
-        cleanText = cleanText.replaceAll("’", "'");
-        cleanText = cleanText.replaceAll("¼", "1/4");
-        cleanText = cleanText.replaceAll("½", "1/2");
-        cleanText = cleanText.replaceAll("¾", "3/4");
+        cleanText = cleanSpecialCharacters(cleanText);
         return cleanText;
     }
 }

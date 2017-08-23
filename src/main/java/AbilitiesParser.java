@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class AbilitiesParser {
+class AbilitiesParser extends BaseParser {
     JSONObject parse(String abilitiesText) {
         final String cleanText = clean(abilitiesText);
 //        System.out.println(cleanText);
@@ -66,7 +66,7 @@ class AbilitiesParser {
         return null;
     }
 
-    private String clean(String text) {
+    protected String clean(String text) {
         String cleanText = text;
         // Remove all "Indices and Reference"
         cleanText = cleanText.replaceAll("Indices and Reference\r\n", "");
@@ -74,16 +74,10 @@ class AbilitiesParser {
         cleanText = cleanText.replaceAll("\\d{3}\r\n", "");
         // Remove all list range titles
         cleanText = cleanText.replaceAll("Ability List: *\\w–\\w\r\n", "");
+        // Fix typo of "At Will" to be "At-Will"
+        cleanText = cleanText.replaceAll("At Will", "At-Will");
         // Change all special characters
-        cleanText = cleanText.replaceAll("–", "-");
-        cleanText = cleanText.replaceAll(",", ",");
-        cleanText = cleanText.replaceAll("“", "\"");
-        cleanText = cleanText.replaceAll("”", "\"");
-        cleanText = cleanText.replaceAll("’", "'");
-        cleanText = cleanText.replaceAll("¼", "1/4");
-        cleanText = cleanText.replaceAll("½", "1/2");
-        cleanText = cleanText.replaceAll("¾", "3/4");
-        cleanText = cleanText.replaceAll("\\u2019", "'");
+        cleanText = cleanSpecialCharacters(cleanText);
         return cleanText;
     }
 }

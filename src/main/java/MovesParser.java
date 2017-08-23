@@ -8,7 +8,7 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 
-class MovesParser {
+class MovesParser extends BaseParser {
     // Recoil is not included in the list below because it is the only mechanic with a value
     final List<String> possibleMechanics = asList("Aura", "Berry", "Blessing", "Coat", "Dash", "Double Strike", "Environ",
             "Execute", "Exhaust", "Fling", "Friendly", "Five Strike", "Groundsource", "Hazard", "Illusion", "Interrupt",
@@ -19,7 +19,7 @@ class MovesParser {
     JSONObject parse(String movesText) {
         final String cleanText = clean(movesText);
 //        System.out.println(cleanText);
-        JSONObject moves = new JSONObject();
+        final JSONObject moves = new JSONObject();
         final String moveRegex = "Move: ([\\w \\-]*)\\s*[\\w \\s\\W]*?(?=Move:|$)";
         final Matcher moveMatcher = Pattern.compile(moveRegex).matcher(cleanText);
         while (moveMatcher.find()) {
@@ -33,7 +33,7 @@ class MovesParser {
             move.put("accuracyCheck", parseAccuracyCheck(moveText));
             move.put("damageBase", parseDamageBase(moveText));
             move.put("class", parseClass(moveText));
-            final String rangeInformation = parseNamedString("Range:", moveText);
+            final String rangeInformation = parseLabeledString("Range:", moveText);
             move.put("attackOptions", parseAttackOptions(rangeInformation));
             move.put("mechanics", parseMechanics(rangeInformation));
             move.put("recoil", parseRecoil(rangeInformation));
@@ -47,26 +47,8 @@ class MovesParser {
         return moves;
     }
 
-    private String parseNamedString(String name, String text) {
-        final String nameRegex = name + " *(.+)";
-        final Matcher nameMatcher = Pattern.compile(nameRegex).matcher(text);
-        if (nameMatcher.find()) {
-            return nameMatcher.group(1).trim();
-        }
-        return null;
-    }
-
-    private Integer parseNamedInteger(String name, String text) {
-        final String nameRegex = name + " *(\\d+)";
-        final Matcher nameMatcher = Pattern.compile(nameRegex).matcher(text);
-        if (nameMatcher.find()) {
-            return parseInt(nameMatcher.group(1).trim());
-        }
-        return null;
-    }
-
     private String parseType(String moveText) {
-        final String type = parseNamedString("Type:", moveText);
+        final String type = parseLabeledString("Type:", moveText);
         if (type != null) {
             return type;
         }
@@ -92,7 +74,7 @@ class MovesParser {
     }
 
     private Integer parseAccuracyCheck(String moveText) {
-        final String accuracyCheckString = parseNamedString("AC:", moveText);
+        final String accuracyCheckString = parseLabeledString("AC:", moveText);
         if (accuracyCheckString != null) {
             if (accuracyCheckString.equals("None") | accuracyCheckString.equals("See Effect")) {
                 return null;
@@ -104,11 +86,11 @@ class MovesParser {
     }
 
     private Integer parseDamageBase(String moveText) {
-        return parseNamedInteger("Damage Base", moveText);
+        return parseLabeledInteger("Damage Base", moveText);
     }
 
     private String parseClass(String moveText) {
-        return parseNamedString("Class:", moveText);
+        return parseLabeledString("Class:", moveText);
     }
 
     private List<Map<String, Object>> parseAttackOptions(String rangeInformation) {
@@ -162,16 +144,16 @@ class MovesParser {
     }
 
     private String parseContestType(String moveText) {
-        return parseNamedString("Contest Type:", moveText);
+        return parseLabeledString("Contest Type:", moveText);
     }
 
     private String parseContestEffect(String moveText) {
-        return parseNamedString("Contest Effect:", moveText);
+        return parseLabeledString("Contest Effect:", moveText);
     }
 
     // TODO: make Special an object
     private String parseSpecial(String moveText) {
-        return parseNamedString("Special:", moveText);
+        return parseLabeledString("Special:", moveText);
     }
 
     private String parseSetup(String moveText) {
@@ -195,7 +177,7 @@ class MovesParser {
         return null;
     }
 
-    private String clean(String text) {
+    protected String clean(String text) {
         String cleanText = text;
         // Remove all "Indices and Reference"
         cleanText = cleanText.replaceAll("Indices and Reference\r\n", "");

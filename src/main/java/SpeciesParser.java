@@ -9,15 +9,15 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 
-class SpeciesParser {
-    final List<String> problemSpecies = asList(
+class SpeciesParser extends BaseParser {
+    private final List<String> problemSpecies = asList(
             "Pumpkaboo", // Too many forms
             "Gourgeist" // Too many forms
     );
 
     // A list of a the special capabilities
     // Naturewalk and Mountable are not included in this list because they require there own parsers
-    final List<String> possibleSpecialCapabilities = asList("Alluring", "Amorphous", "Aura Reader", "Aura Pulse",
+    private final List<String> possibleSpecialCapabilities = asList("Alluring", "Amorphous", "Aura Reader", "Aura Pulse",
             "Blindsense", "Bloom", "Blender", "Chilled", "Darkvision", "Dead Silent", "Delta Evolution", "Dream Mist",
             "Dream Reader", "Egg Warmer", "Firestarter", "Fortune", "Fountain", "Freezer", "Gather Unown", "Gilled",
             "Glow", "Groundshaper", "Guster", "Heart Gift", "Heater", "Herb Growth", "Honey Gather", "Illusionist",
@@ -34,7 +34,7 @@ class SpeciesParser {
     JSONObject parse(List<String> pages) {
         JSONObject species = new JSONObject();
         for (String page: pages) {
-            String cleanedPage = cleanPage(page);
+            String cleanedPage = clean(page);
 //            System.out.println(cleanedPage);
             final Map<String, Object> specie = new HashMap<>();
             String name = parseName(cleanedPage);
@@ -59,7 +59,7 @@ class SpeciesParser {
                 specie.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
                 specie.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
                 specie.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
-                specie.put("averageHatchRate", parseNamedInteger(cleanedPage, "Average Hatch Rate:"));
+                specie.put("averageHatchRate", parseLabeledInteger("Average Hatch Rate:", cleanedPage));
                 specie.put("stats", parseStats(cleanedPage));
                 specie.put("skills", parseSkills(cleanedPage));
                 specie.put("height", parseHeight(cleanedPage));
@@ -74,7 +74,7 @@ class SpeciesParser {
         return species;
     }
 
-    private String cleanPage(String page) {
+    protected String clean(String page) {
         String cleanedPage = page;
         // Connect words the are separated by a newline
         cleanedPage = cleanedPage.replaceAll("(\\w)-\r\n(\\w)", "$1$2");
@@ -193,15 +193,6 @@ class SpeciesParser {
         }
     }
 
-    private Integer parseNamedInteger(String text, String name) {
-        final String namedIntegerRegex = name + "\\s*(\\d+)";
-        Matcher namedIntegerMatcher = Pattern.compile(namedIntegerRegex).matcher(text);
-        if (namedIntegerMatcher.find()) {
-            return parseInt(namedIntegerMatcher.group(1));
-        }
-        return null;
-    }
-
     private List<String> parseSlashSeparatedList(String text, String name) {
         final List<String> items = new ArrayList<>();
         final String namedSlashSeparatedListRegex = name + "\\s*:\\s*([\\w \\d]*)(?:\\s*\\/\\s*([\\w \\d]*))?";
@@ -235,16 +226,16 @@ class SpeciesParser {
 
     private Map<String, Integer> parseStats(String page) {
         final Map<String, Integer> stats = new HashMap<>();
-        stats.put("hp", parseNamedInteger(page, "HP:"));
-        stats.put("attack", parseNamedInteger(page, "Attack:"));
-        stats.put("defense", parseNamedInteger(page, "Defense:"));
-        stats.put("specialAttack", parseNamedInteger(page, "Special Attack:"));
-        stats.put("specialDefense", parseNamedInteger(page, "Special Defense:"));
-        stats.put("speed", parseNamedInteger(page, "Speed:"));
+        stats.put("hp", parseLabeledInteger("HP:", page));
+        stats.put("attack", parseLabeledInteger("Attack:", page));
+        stats.put("defense", parseLabeledInteger("Defense:", page));
+        stats.put("specialAttack", parseLabeledInteger("Special Attack:", page));
+        stats.put("specialDefense", parseLabeledInteger("Special Defense:", page));
+        stats.put("speed", parseLabeledInteger("Speed:", page));
         return stats;
     }
 
-    private Map<String, Object> parseSkill(String page, String name) {
+    private Map<String, Object> parseSkill(String name, String page) {
         final Map<String, Object> skill = new HashMap<>();
         final String skillRegex = name + "\\s*((\\d*)d(\\d*)(?:\\+(\\d*))?)";
         final Matcher matcher = Pattern.compile(skillRegex).matcher(page);
@@ -271,12 +262,12 @@ class SpeciesParser {
 
     private Map<String, Map<String, Object>> parseSkills(String page) {
         final Map<String, Map<String, Object>> skills = new HashMap<>();
-        skills.put("athletics", parseSkill(page, "Athl"));
-        skills.put("acrobatics", parseSkill(page, "Acro"));
-        skills.put("combat", parseSkill(page, "Combat"));
-        skills.put("stealth", parseSkill(page, "Stealth"));
-        skills.put("perception", parseSkill(page, "Percep"));
-        skills.put("focus", parseSkill(page, "Focus"));
+        skills.put("athletics", parseSkill("Athl", page));
+        skills.put("acrobatics", parseSkill("Acro", page));
+        skills.put("combat", parseSkill("Combat", page));
+        skills.put("stealth", parseSkill("Stealth", page));
+        skills.put("perception", parseSkill("Percep", page));
+        skills.put("focus", parseSkill("Focus", page));
         return skills;
     }
 
@@ -540,14 +531,14 @@ class SpeciesParser {
         final String capabilityInformation = parseCapabilityInformation(page);
         final List<String> specialCapabilities = parseSpecialCapabilities(capabilityInformation);
         capabilities.put("specialCapabilities", specialCapabilities);
-        capabilities.put("sky", parseNamedInteger(capabilityInformation, "Sky"));
-        capabilities.put("swim", parseNamedInteger(capabilityInformation, "Swim"));
-        capabilities.put("overland", parseNamedInteger(capabilityInformation, "Overland"));
-        capabilities.put("levitate", parseNamedInteger(capabilityInformation, "Levitate"));
-        capabilities.put("power", parseNamedInteger(capabilityInformation, "Power"));
-        capabilities.put("burrow", parseNamedInteger(capabilityInformation, "Burrow"));
+        capabilities.put("sky", parseLabeledInteger("Sky", capabilityInformation));
+        capabilities.put("swim", parseLabeledInteger("Swim", capabilityInformation));
+        capabilities.put("overland", parseLabeledInteger("Overland", capabilityInformation));
+        capabilities.put("levitate", parseLabeledInteger("Levitate", capabilityInformation));
+        capabilities.put("power", parseLabeledInteger("Power", capabilityInformation));
+        capabilities.put("burrow", parseLabeledInteger("Burrow", capabilityInformation));
         capabilities.put("jump", parseJump(capabilityInformation));
-        capabilities.put("mountable", parseNamedInteger(capabilityInformation, "Mountable"));
+        capabilities.put("mountable", parseLabeledInteger("Mountable", capabilityInformation));
         capabilities.put("naturewalk", parseNaturewalk(capabilityInformation));
         return capabilities;
     }
