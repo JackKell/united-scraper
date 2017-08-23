@@ -18,6 +18,7 @@ public class UnitedScraper {
         parseAbilities();
         parseMoves();
         parseCapabilities();
+        parseEdges();
     }
 
     static private List<String> getPokedexPages() throws IOException {
@@ -69,6 +70,10 @@ public class UnitedScraper {
         return getCoreText(303, 308);
     }
 
+    static private String getEdgesText() throws IOException {
+        return getCoreText(52, 56);
+    }
+
     static private void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
         final String objectData = jsonObject.toString(2);
         final List<String> lines = Collections.singletonList(objectData);
@@ -102,5 +107,12 @@ public class UnitedScraper {
         final CapabilitiesParser capabilitiesParser = new CapabilitiesParser();
         final JSONObject capabilitiesObject = capabilitiesParser.parse(capabilitiesText);
         saveJSONObject(capabilitiesObject, "out/capabilities.json");
+    }
+
+    static private void parseEdges() throws IOException {
+        final String edgesText = getEdgesText();
+        final EdgesParser edgesParser = new EdgesParser();
+        final JSONObject edgesObject = edgesParser.parse(edgesText);
+        saveJSONObject(edgesObject, "out/edges.json");
     }
 }
