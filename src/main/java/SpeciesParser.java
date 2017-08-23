@@ -3,7 +3,6 @@ import org.json.JSONObject;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
@@ -48,7 +47,7 @@ class SpeciesParser extends BaseParser {
                 specie.put("evolvesFrom", parseEvolvesFrom(cleanedPage, stage));
                 specie.put("evolvesTo", parseEvolvesTo(cleanedPage, stage));
                 specie.put("capabilities", parseCapabilities(cleanedPage));
-                specie.put("highAbilities", parseHighAbilities(cleanedPage));
+                specie.put("highAbilities", parseLabeledDelimitedList("High\\s*Ability\\s*:", "/", page));
                 specie.put("advancedAbilities", parseAdvancedAbilities(cleanedPage));
                 specie.put("basicAbilities", parseBasicAbilities(cleanedPage));
                 specie.put("tutorMoves", parseTutorMoves(cleanedPage));
@@ -75,18 +74,18 @@ class SpeciesParser extends BaseParser {
 
     protected String clean(String page) {
         String cleanedPage = page;
+        // Remove page numbers
+        cleanedPage = cleanedPage.replaceAll("^\\d{2,3}\\s+", "");
         // Connect words the are separated by a newline
-        cleanedPage = cleanedPage.replaceAll("(\\w)-\r\n(\\w)", "$1$2");
+        cleanedPage = cleanedPage.replaceAll("(\\w)-[\r\n]+(\\w)", "$1$2");
         // Fix typo for Drilbur
         cleanedPage = cleanedPage.replace('!', '1');
-        // Fix ’ to be a ' on all pages (Like in the move Forest's Curse verses Forest’s Curse)
-        cleanedPage = cleanedPage.replace('’', '\'');
+        // Replace special characters
+        cleanedPage = cleanSpecialCharacters(cleanedPage);
         // Remove "add" typos in egg group (Phantump, Trevenant, and others)
         cleanedPage = cleanedPage.replaceAll(" and ", " / ");
-        // Fix ” to be a " on all pages (Like on Bulbasaur)
-        cleanedPage = cleanedPage.replace('”', '\"');
         // Put all stages of evolution onto 1 line (For example of Shelmet)
-        cleanedPage = cleanedPage.replaceAll("(\\d +- +[\\S]+.*)\r\n ( \\D)", "$1$2");
+        cleanedPage = cleanedPage.replaceAll("(\\d +- +[\\S]+.*)[\r\n]+ ( \\D)", "$1$2");
         // Fix é to be e
         cleanedPage = cleanedPage.replaceAll("é", "e");
         // Fix É to be E
@@ -102,7 +101,7 @@ class SpeciesParser extends BaseParser {
         // Fix Typo "wiht a" to "with"
         cleanedPage = cleanedPage.replaceAll("wiht a", "with");
         // Fix Empoleon, Marshtomp, SandSlash, and Grotle who has both "High Ability" and "High Abilities"
-        cleanedPage = cleanedPage.replaceAll("(High Ability:\\s*[\\w ]*)\r\n\\s*High Abilities: ([\\w ]*)", "$1 / $2");
+        cleanedPage = cleanedPage.replaceAll("(High Ability:\\s*[\\w ]*)[\r\n]+\\s*High Abilities: ([\\w ]*)", "$1 / $2");
         // Fix typo in Sligoo to be Sliggoo
         cleanedPage = cleanedPage.replaceAll("Sligoo", "Sliggoo");
         // Fix typo for "A3" to be A3 Surf (Nidoqueen, Exploud)
@@ -135,21 +134,26 @@ class SpeciesParser extends BaseParser {
         // Fix typo on Poliwhirl page
         cleanedPage = cleanedPage.replaceAll("3 - Holding", "3 - Politoed Holding");
         // Fix typo on Silcoon page for Habitat
-        cleanedPage = cleanedPage.replaceAll("(Habitat *: *)[\\r\\n]+", "$1");
+        cleanedPage = cleanedPage.replaceAll("(Habitat *: *)[\r\n]+", "$1");
         // Fix Porygon-Z to have a "Diet:" instead of a "Biology:"
         cleanedPage = cleanedPage.replaceAll("Biology *:", "Diet :");
         return cleanedPage;
     }
 
-    private String parseName(String text) {
-        String name = text.substring(text.indexOf('\n') + 1, text.indexOf("Base")).trim();
-        name = name.substring(0, 1) + name.substring(1).toLowerCase();
-        return name;
+    private String parseName(String page) {
+        final String nameRegex = "^(.*)";
+        final Matcher nameMatcher = Pattern.compile(nameRegex).matcher(page);
+        if (nameMatcher.find()) {
+            String name = nameMatcher.group(1).trim();
+            name = name.substring(0, 1) + name.substring(1).toLowerCase();
+            return name;
+        }
+        throw new Error("All species should have a name");
     }
 
     private Map<String, Object> parseHeight(String page) {
         final Map<String, Object> height = new HashMap<>();
-        final String heightRegex = "Height\\s*:\\s*(\\d*' \\d*\") \\/ (\\d*.\\d*) *m \\((\\w*)\\)";
+        final String heightRegex = "Height\\s*:\\s*(\\d*' \\d*\") / (\\d*.\\d*) *m \\((\\w*)\\)";
         final Matcher heightMatcher = Pattern.compile(heightRegex).matcher(page);
         if (heightMatcher.find()) {
             final String ft = heightMatcher.group(1);
@@ -166,7 +170,7 @@ class SpeciesParser extends BaseParser {
 
     private Map<String, Object> parseWeight(String page) {
         final Map<String, Object> weight = new HashMap<>();
-        final String weightRegex = "Weight\\s*:\\s*(\\d*.\\d*) *lbs\\. \\/ (\\d*.\\d*) *kg \\((\\w*)\\)";
+        final String weightRegex = "Weight\\s*:\\s*(\\d*.\\d*) *lbs\\. / (\\d*.\\d*) *kg \\((\\w*)\\)";
         final Matcher weightMatcher = Pattern.compile(weightRegex).matcher(page);
         if (weightMatcher.find()) {
             final float lbs = parseFloat(weightMatcher.group(1));
@@ -183,7 +187,7 @@ class SpeciesParser extends BaseParser {
 
     private Map<String, Integer> parseJump(String page) {
         final Map<String, Integer> jump = new HashMap<>();
-        final String jumpRegex = "Jump\\s*(\\d*)\\/(\\d*)";
+        final String jumpRegex = "Jump\\s*(\\d*)/(\\d*)";
         final Matcher jumpMatcher = Pattern.compile(jumpRegex).matcher(page);
         if (jumpMatcher.find()) {
             final int longJump = parseInt(jumpMatcher.group(1));
@@ -209,7 +213,7 @@ class SpeciesParser extends BaseParser {
 
     private Map<String, Object> parseSkill(String name, String page) {
         final Map<String, Object> skill = new HashMap<>();
-        final String skillRegex = name + "\\s*((\\d*)d(\\d*)(?:\\+(\\d*))?)";
+        final String skillRegex = name + "\\s*((\\d+)d(\\d+)(?:\\+(\\d+))?)";
         final Matcher matcher = Pattern.compile(skillRegex).matcher(page);
         if (matcher.find()) {
             final String value = matcher.group(1);
@@ -245,12 +249,10 @@ class SpeciesParser extends BaseParser {
 
     private Map<String, Object> parseGenderRatio(String page) {
         final Map<String, Object> genderRatio = new HashMap<>();
-        final String genderRegex = "Gender Ratio\\s*:\\s*(.*)\r\n";
-        final Matcher genderMatcher = Pattern.compile(genderRegex).matcher(page);
-        if (genderMatcher.find()) {
-            final String result = genderMatcher.group(1);
-            final String ratioRegex = "([\\d\\.]+)%\\s*M\\s*(?:\\/)?\\s*([\\d\\.]+)%\\s*F";
-            final Matcher ratioMatcher = Pattern.compile(ratioRegex).matcher(result);
+        final String genderInformation = parseLabeledString("Gender Ratio *:", page);
+        if (genderInformation != null) {
+            final String ratioRegex = "([\\d.]+)%\\s*M\\s*(?:/)?\\s*([\\d.]+)%\\s*F";
+            final Matcher ratioMatcher = Pattern.compile(ratioRegex).matcher(genderInformation);
             if (ratioMatcher.find()) {
                 final float maleRatio = parseFloat(ratioMatcher.group(1));
                 final float femaleRatio = parseFloat(ratioMatcher.group(2));
@@ -258,10 +260,10 @@ class SpeciesParser extends BaseParser {
                 genderRatio.put("female", femaleRatio);
                 genderRatio.put("gendered", true);
                 return genderRatio;
-            } else if (result.equals("Hermaphrodite")) {
+            } else if (genderInformation.equals("Hermaphrodite")) {
                 genderRatio.put("hermaphrodite", true);
                 return genderRatio;
-            } else if (result.equals("No Gender") || result.equals("Genderless")) {
+            } else if (genderInformation.equals("No Gender") || genderInformation.equals("Genderless")) {
                 genderRatio.put("gendered", false);
                 return genderRatio;
             }
@@ -284,20 +286,21 @@ class SpeciesParser extends BaseParser {
 
     private List<String> parseMachineMoves(String page) {
         final List<String> machineMoves = new ArrayList<>();
-        final String machineMoveListRegex = "TM\\/HM Move List\\s*([\\s\\d\\w,-]*?)(?:Egg|Tutor)";
+        final String machineMoveListRegex = "TM/HM Move List\\s*([\\s\\d\\w,-]*?)(?:Egg|Tutor)";
         final Matcher machineMoveListMatcher = Pattern.compile(machineMoveListRegex).matcher(page);
         final String machineMoveRegex = "\\w*? ([a-zA-Z -]+)";
         final Pattern machineMovePattern = Pattern.compile(machineMoveRegex);
         if (machineMoveListMatcher.find()) {
-            String result = machineMoveListMatcher.group(1);
-            result = result.replaceAll("\r\n", "");
-            if (result.equals("None") || result.isEmpty()) return null;
-            final List<String> machineMoveStrings = asList(result.trim().split(","));
+            String delimitedMachineMoveList = machineMoveListMatcher.group(1);
+            delimitedMachineMoveList = consolidateLines(delimitedMachineMoveList);
+            if (delimitedMachineMoveList.equals("None") || delimitedMachineMoveList.isEmpty()) return null;
+            final List<String> machineMoveStrings = parseDelimitedList(delimitedMachineMoveList, ",");
             Matcher machineMoveMatcher;
             for (String machineMoveString : machineMoveStrings) {
                 machineMoveMatcher = machineMovePattern.matcher(machineMoveString.trim());
                 if (machineMoveMatcher.find()) {
-                    machineMoves.add(machineMoveMatcher.group(1));
+                    final String machineMoveName = machineMoveMatcher.group(1);
+                    machineMoves.add(machineMoveName);
                 } else {
                     throw new Error("Machine move: \"" + machineMoveString.trim() + "\" was not parsed correctly");
                 }
@@ -308,16 +311,15 @@ class SpeciesParser extends BaseParser {
     }
 
     private Map<String, Object> parseTutorMoves(String page) {
-        String cleanPage = page.replaceAll("Mega Evolution(.*\r\n)*", "");
         final Map<String, Object> tutorMoves = new HashMap<>();
-        final String tutorMoveListRegex = "Tutor *Move *List *\r\n((?:[a-zA-Z- ,\\(\\)]+\r\n)+)(?:(?=Mega Evolution)|)";
-        final Matcher tutorMoveListMatcher = Pattern.compile(tutorMoveListRegex).matcher(cleanPage);
-        final String tutorMoveRegex = "([a-zA-Z- ]+)(?: *(\\( *N *\\)))?";
-        final Pattern tutorMovePattern = Pattern.compile(tutorMoveRegex);
+        final String tutorMoveListRegex = "Tutor *Move *List\\s+([\\w\\W]*?)(?=Mega Evolution|$)";
+        final Matcher tutorMoveListMatcher = Pattern.compile(tutorMoveListRegex).matcher(page);
         if (tutorMoveListMatcher.find()) {
-            String result = tutorMoveListMatcher.group(1);
-            result = result.replaceAll("\r\n", "");
-            final List<String> tutorMoveStrings = asList(result.trim().split(","));
+            String delimitedTutorMoveList = tutorMoveListMatcher.group(1);
+            delimitedTutorMoveList = consolidateLines(delimitedTutorMoveList);
+            final List<String> tutorMoveStrings = parseDelimitedList(delimitedTutorMoveList, ",");
+            final String tutorMoveRegex = "([a-zA-Z- ]+)(?: *(\\( *N *\\)))?";
+            final Pattern tutorMovePattern = Pattern.compile(tutorMoveRegex);
             Matcher tutorMoveMatcher;
             for (String tutorMoveString : tutorMoveStrings) {
                 tutorMoveMatcher = tutorMovePattern.matcher(tutorMoveString.trim());
@@ -337,16 +339,14 @@ class SpeciesParser extends BaseParser {
     }
 
     private List<String> parseEggMoves(String page) {
-        final List<String> eggMoves;
         final String eggMoveListRegex = "Egg Move List\\s*([-a-zA-Z,\\s]+)Tutor Move List";
         final Matcher eggMoveListMatcher = Pattern.compile(eggMoveListRegex).matcher(page);
         if (eggMoveListMatcher.find()) {
-            String result = eggMoveListMatcher.group(1);
-            result = result.replaceAll("\r\n", "");
-            eggMoves = asList(result.trim().split(","));
-            for (int i = 0; i < eggMoves.size(); i++) {
-                eggMoves.set(i, eggMoves.get(i).trim());
-            }
+            String delimitedEggMoveList = eggMoveListMatcher.group(1);
+            delimitedEggMoveList = consolidateLines(delimitedEggMoveList);
+            if (delimitedEggMoveList.isEmpty()) return null;
+            final List<String> eggMoves = parseDelimitedList(delimitedEggMoveList, ",");
+            if (eggMoves.isEmpty()) return null;
             return eggMoves;
         }
         return null;
@@ -370,21 +370,6 @@ class SpeciesParser extends BaseParser {
             advancedAbilities.add(matcher.group(1));
         }
         return advancedAbilities;
-    }
-
-    private List<String> parseHighAbilities(String page) {
-        final List<String> highAbilities;
-        final String highAbilityRegex = "High\\s*Ability\\s*:\\s*((?:.*\\s*\\/)*\\s*.*)";
-        final Matcher matcher = Pattern.compile(highAbilityRegex).matcher(page);
-        if (matcher.find()) {
-            final String result = matcher.group(1);
-            highAbilities = asList(result.split("\\/"));
-            for (int i = 0; i < highAbilities.size(); i++) {
-                highAbilities.set(i, highAbilities.get(i).trim());
-            }
-            return highAbilities;
-        }
-        return null;
     }
 
     private String parseInteractCondition(String conditions) {
@@ -462,13 +447,12 @@ class SpeciesParser extends BaseParser {
     }
 
     private String parseCapabilityInformation(String page) {
-        final String capabilityInformationRegex = "Capability List *\r\n([\\w\\W]+?) *Skill List";
+        final String capabilityInformationRegex = "Capability List\\s+([\\w\\W]+?)(?=Skill List)";
         final Matcher capabilityInformationMatcher = Pattern.compile(capabilityInformationRegex).matcher(page);
         if (capabilityInformationMatcher.find()) {
-            return capabilityInformationMatcher.group(1).replaceAll("\r\n", "");
-        } else {
-            return "";
+            return consolidateLines(capabilityInformationMatcher.group(1));
         }
+        return "";
     }
 
     private List<String> parseSpecialCapabilities(String capabilityInformation) {
@@ -509,10 +493,7 @@ class SpeciesParser extends BaseParser {
 
     private List<String> parseMegaTypes(String types) {
         if (types.trim().equals("Unchanged")) return null;
-        return Arrays.stream(types
-                .split("/"))
-                .map(String::trim)
-                .collect(Collectors.toList());
+        return parseDelimitedList(types, "/");
     }
 
     private Integer parseMegaEvolutionStat(String statsString, String stat) {
@@ -544,7 +525,7 @@ class SpeciesParser extends BaseParser {
         Map<String, Object> megaEvolution;
         while(megaEvolutionMatcher.find()) {
             final String typesString = megaEvolutionMatcher.group(2);
-            final String statsString = megaEvolutionMatcher.group(4).replace("\r\n", "");
+            final String statsString = consolidateLines(megaEvolutionMatcher.group(4));
             String name = megaEvolutionMatcher.group(1);
             name = name.isEmpty() ? null : name;
             final List<String> types = parseMegaTypes(typesString);
@@ -565,12 +546,7 @@ class SpeciesParser extends BaseParser {
         final String naturewalkRegex = "[Nn]aturewalk *\\((.*)\\)";
         final Matcher naturewalkMatcher = Pattern.compile(naturewalkRegex).matcher(capabilityInformation);
         if (naturewalkMatcher.find()) {
-            // Trim all of the elements in a list of strings
-            // Credit: https://stackoverflow.com/questions/36430727/whats-the-best-way-to-trim-all-elements-in-a-liststring
-            return Arrays.stream(naturewalkMatcher.group(1)
-                    .split(","))
-                    .map(String::trim)
-                    .collect(Collectors.toList());
+            return parseDelimitedList(naturewalkMatcher.group(1), ",");
         }
         return null;
     }
