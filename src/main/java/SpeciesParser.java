@@ -29,8 +29,6 @@ class SpeciesParser extends BaseParser {
             "X-Ray Vision", "Zapper"
     );
 
-    SpeciesParser() {}
-
     JSONObject parse(List<String> pages) {
         JSONObject species = new JSONObject();
         for (String page: pages) {
@@ -38,6 +36,7 @@ class SpeciesParser extends BaseParser {
 //            System.out.println(cleanedPage);
             final Map<String, Object> specie = new HashMap<>();
             String name = parseName(cleanedPage);
+//            System.out.println(name);
             specie.put("name", name);
             if (problemSpecies.contains(name) || name.contains("form") && !name.equals("Castform")) {
 //                System.out.println(specie);
@@ -57,15 +56,15 @@ class SpeciesParser extends BaseParser {
                 specie.put("machineMoves", parseMachineMoves(cleanedPage));
                 specie.put("genderRatio", parseGenderRatio(cleanedPage));
                 specie.put("levelUpMoves", parseLevelUpMoves(cleanedPage));
-                specie.put("types", parseSlashSeparatedList(cleanedPage, "Type"));
-                specie.put("eggGroups", parseSlashSeparatedList(cleanedPage, "Egg Group"));
+                specie.put("types", parseLabeledDelimitedList("Type *:", "/", cleanedPage));
+                specie.put("eggGroups", parseLabeledDelimitedList("Egg Group *:", "/", cleanedPage));
                 specie.put("averageHatchRate", parseLabeledInteger("Average Hatch Rate:", cleanedPage));
                 specie.put("stats", parseStats(cleanedPage));
                 specie.put("skills", parseSkills(cleanedPage));
                 specie.put("height", parseHeight(cleanedPage));
                 specie.put("weight", parseWeight(cleanedPage));
-                specie.put("diets", parseCommaSeparatedList(cleanedPage, "Diet"));
-                specie.put("habitats", parseCommaSeparatedList(cleanedPage, "Habitat"));
+                specie.put("diets", parseLabeledDelimitedList("Diet *:", ",", cleanedPage));
+                specie.put("habitats", parseLabeledDelimitedList("Habitat *:", ",", cleanedPage));
                 species.put(name, specie);
 //                System.out.println(specie);
             }
@@ -135,6 +134,10 @@ class SpeciesParser extends BaseParser {
         cleanedPage = cleanedPage.replaceAll("M[Rr]\\. M[Ii][Mm][Ee]", "Mr.mime");
         // Fix typo on Poliwhirl page
         cleanedPage = cleanedPage.replaceAll("3 - Holding", "3 - Politoed Holding");
+        // Fix typo on Silcoon page for Habitat
+        cleanedPage = cleanedPage.replaceAll("(Habitat *: *)[\\r\\n]+", "$1");
+        // Fix Porygon-Z to have a "Diet:" instead of a "Biology:"
+        cleanedPage = cleanedPage.replaceAll("Biology *:", "Diet :");
         return cleanedPage;
     }
 
@@ -190,37 +193,6 @@ class SpeciesParser extends BaseParser {
             return jump;
         } else {
             throw new Error("ERROR: All pokemon species should have a jump to parse\n" + page);
-        }
-    }
-
-    private List<String> parseSlashSeparatedList(String text, String name) {
-        final List<String> items = new ArrayList<>();
-        final String namedSlashSeparatedListRegex = name + "\\s*:\\s*([\\w \\d]*)(?:\\s*\\/\\s*([\\w \\d]*))?";
-        final Matcher matcher = Pattern.compile(namedSlashSeparatedListRegex).matcher(text);
-        if (matcher.find()) {
-            final String item1 = matcher.group(1);
-            final String item2 = matcher.group(2);
-            items.add(item1.trim());
-            if (item2 != null) items.add(item2.trim());
-        } else {
-            throw new Error("No match was found in:\n" + text + "\n For regex string " + namedSlashSeparatedListRegex);
-        }
-        return items;
-    }
-
-    private List<String> parseCommaSeparatedList(String text, String name) {
-        final List<String> items;
-        final String p = name + " *:(.*)";
-        final Matcher matcher = Pattern.compile(p).matcher(text);
-        if (matcher.find()) {
-            String itemsString = matcher.group(1);
-            items = asList(itemsString.split(","));
-            for (int i = 0; i < items.size(); i++) {
-                items.set(i, items.get(i).trim());
-            }
-            return items;
-        } else {
-            return null;
         }
     }
 
@@ -413,23 +385,6 @@ class SpeciesParser extends BaseParser {
             return highAbilities;
         }
         return null;
-    }
-
-    private List<Map<String, Object>> parseEvolutionChain(String page) {
-        final List<Map<String, Object>> evolutionChain = new ArrayList<>();
-        final String evolutionStageRegex = "(\\d) +- +([\\w-]*) *(.*)";
-        final Matcher matcher = Pattern.compile(evolutionStageRegex).matcher(page);
-        while (matcher.find()) {
-            final Map<String, Object> evolution = new HashMap<>();
-            final int stage = parseInt(matcher.group(1));
-            final String pokemon = matcher.group(2);
-            final String conditions = matcher.group(3).replaceAll(" (?= )", " ").trim();
-            evolution.put("stage", stage);
-            evolution.put("pokemon", pokemon);
-            evolution.put("conditions", parseEvolutionCondition(conditions));
-            evolutionChain.add(evolution);
-        }
-        return evolutionChain;
     }
 
     private String parseInteractCondition(String conditions) {

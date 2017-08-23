@@ -1,8 +1,10 @@
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 
@@ -65,5 +67,16 @@ abstract class BaseParser {
 
     final String consolidateLinesAndSpaces(String text) {
         return consolidateSpaces(consolidateLines(text));
+    }
+
+    final List<String> parseDelimitedList(String text, String delimiter) {
+        return Arrays.stream(text.split(delimiter))
+                .map(String::trim)
+                .collect(Collectors.toList());
+    }
+
+    final List<String> parseLabeledDelimitedList(String label, String delimiter, String text) {
+        final String delimitedList = parseLabeledString(label, text);
+        return parseDelimitedList(delimitedList, delimiter);
     }
 }
