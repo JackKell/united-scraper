@@ -84,6 +84,11 @@ public class UnitedScraper {
         Files.write(file, lines, Charset.forName("UTF-8"));
     }
 
+    static private void parseTextBlockData(String data, TextBlockParser textBlockParser, String outputPath) throws IOException {
+        final JSONObject jsonObject = textBlockParser.parse(data);
+        saveJSONObject(jsonObject, outputPath);
+    }
+
     static private void parseSpecies() throws IOException {
         final List<String> speciesPages = getSpeciePages();
         final SpeciesParser speciesParser = new SpeciesParser();
@@ -92,30 +97,18 @@ public class UnitedScraper {
     }
 
     static private void parseAbilities() throws IOException {
-        final String abilitiesText = getAbilitiesText();
-        final AbilitiesParser abilitiesParser = new AbilitiesParser();
-        final JSONObject abilitiesObject = abilitiesParser.parse(abilitiesText);
-        saveJSONObject(abilitiesObject, "out" + separator + "abilities.json");
+        parseTextBlockData(getAbilitiesText(), new AbilitiesParser(), "out" + separator + "abilities.json");
     }
 
     static private void parseMoves() throws IOException {
-        final String movesText = getMovesText();
-        final MovesParser movesParser = new MovesParser();
-        final JSONObject movesObject = movesParser.parse(movesText);
-        saveJSONObject(movesObject, "out" + separator + "moves.json");
+        parseTextBlockData(getMovesText(), new MovesParser(), "out" + separator + "moves.json");
     }
 
     static private void parseCapabilities() throws IOException {
-        final String capabilitiesText = getCapabilitiesText();
-        final CapabilitiesParser capabilitiesParser = new CapabilitiesParser();
-        final JSONObject capabilitiesObject = capabilitiesParser.parse(capabilitiesText);
-        saveJSONObject(capabilitiesObject, "out" + separator + "capabilities.json");
+        parseTextBlockData(getCapabilitiesText(), new CapabilitiesParser(), "out" + separator + "capabilities.json");
     }
 
     static private void parseEdges() throws IOException {
-        final String edgesText = getEdgesText();
-        final EdgesParser edgesParser = new EdgesParser();
-        final JSONObject edgesObject = edgesParser.parse(edgesText);
-        saveJSONObject(edgesObject, "out" + separator + "edges.json");
+        parseTextBlockData(getEdgesText(), new EdgesParser(), "out" + separator + "edges.json");
     }
 }
