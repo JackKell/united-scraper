@@ -18,17 +18,28 @@ class EdgesParser extends TextBlockParser {
             final Map<String, Object> edge = new HashMap<>();
             edge.put("name", edgeName);
             edge.put("prerequisites", parsePrerequisites(edgeText));
-            edge.put("parseEffect", parseEffect(edgeText));
+            edge.put("effect", parseEffect(edgeText));
             edges.put(edgeName, edge);
         }
         return edges;
     }
 
+    // TODO: Make prerequisites an object
     private String parsePrerequisites(String edgeText) {
+        final String prerequisitesRegex = "Prerequisites: ([\\w\\W]*?)(?=Effect:)";
+        final Matcher prerequisitesMatcher = Pattern.compile(prerequisitesRegex).matcher(edgeText);
+        if (prerequisitesMatcher.find()) {
+            return consolidateLines(prerequisitesMatcher.group(1));
+        }
         return null;
     }
 
     private String parseEffect(String edgeText) {
+        final String effectRegex = "Effect: ([\\w\\W]*?)(?=Edge:|$)";
+        final Matcher effectMatcher = Pattern.compile(effectRegex).matcher(edgeText);
+        if (effectMatcher.find()) {
+            return consolidateLines(effectMatcher.group(1));
+        }
         return null;
     }
 
@@ -47,6 +58,8 @@ class EdgesParser extends TextBlockParser {
         // Fix all cases of "Prerequisite:" to "Prerequisites:"
         cleanText = cleanText.replaceAll("Prerequisite:", "Prerequisites:");
         cleanText = cleanSpecialCharacters(cleanText);
+        // Remove Static Frequency because all edges have static frequency by default
+        cleanText = cleanText.replaceAll("Static\\s+", "");
         return cleanText;
     }
 }
