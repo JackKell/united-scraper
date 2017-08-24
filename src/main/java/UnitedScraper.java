@@ -23,6 +23,7 @@ public class UnitedScraper {
         parseEdges();
         parseContestEffects();
         parseExperience();
+        parseNatures();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -49,6 +50,10 @@ public class UnitedScraper {
         }
         speciesDocument.close();
         return pages;
+    }
+
+    static private String getCoreText(int pageNumber) throws IOException {
+        return getCoreText(pageNumber, pageNumber);
     }
 
     static private String getCoreText(int start, int end) throws IOException {
@@ -80,11 +85,15 @@ public class UnitedScraper {
     }
 
     static private String getContestEffectsText() throws IOException {
-        return getCoreText(266, 266);
+        return getCoreText(266);
     }
 
     static private String getUsefulChartsText() throws IOException {
-        return getCoreText(497, 497);
+        return getCoreText(497);
+    }
+
+    static private String getNaturesText() throws IOException {
+        return getCoreText(502);
     }
 
     static private void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
@@ -128,5 +137,9 @@ public class UnitedScraper {
 
     static private void parseExperience() throws IOException {
         parseTextBlockData(getUsefulChartsText(), new ExperienceParser(), "out" + separator + "experience.json");
+    }
+
+    static private void parseNatures() throws IOException {
+        parseTextBlockData(getNaturesText(), new NaturesParser(), "out" + separator + "natures.json");
     }
 }
