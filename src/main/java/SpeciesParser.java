@@ -8,7 +8,7 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 
-class SpeciesParser extends BaseParser {
+class SpeciesParser extends PageParser {
     private final List<String> problemSpecies = asList(
             "Pumpkaboo", // Too many forms
             "Gourgeist" // Too many forms

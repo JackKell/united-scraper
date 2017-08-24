@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class CapabilitiesParser extends BaseParser {
+class CapabilitiesParser extends TextBlockParser {
     JSONObject parse(String capabilitiesText) {
         final String cleanText = clean(capabilitiesText);
 //        System.out.println(cleanText);

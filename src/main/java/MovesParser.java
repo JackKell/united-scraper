@@ -8,7 +8,7 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 
-class MovesParser extends BaseParser {
+class MovesParser extends TextBlockParser {
     // Recoil is not included in the list below because it is the only mechanic with a value
     final List<String> possibleMechanics = asList("Aura", "Berry", "Blessing", "Coat", "Dash", "Double Strike", "Environ",
             "Execute", "Exhaust", "Fling", "Friendly", "Five Strike", "Groundsource", "Hazard", "Illusion", "Interrupt",

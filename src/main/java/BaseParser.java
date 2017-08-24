@@ -9,14 +9,6 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.parseInt;
 
 abstract class BaseParser {
-    JSONObject parse(List<String> texts) {
-        return null;
-    }
-
-    JSONObject parse(String text) {
-        return null;
-    }
-
     protected abstract String clean(String text);
 
     final String cleanSpecialCharacters(String text) {
