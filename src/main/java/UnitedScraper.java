@@ -1,4 +1,3 @@
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
@@ -23,6 +22,7 @@ public class UnitedScraper {
         parseCapabilities();
         parseEdges();
         parseContestEffects();
+        parseExperience();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -83,6 +83,10 @@ public class UnitedScraper {
         return getCoreText(266, 266);
     }
 
+    static private String getUsefulChartsText() throws IOException {
+        return getCoreText(497, 497);
+    }
+
     static private void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
         final String objectData = jsonObject.toString(2);
         final List<String> lines = Collections.singletonList(objectData);
@@ -120,5 +124,9 @@ public class UnitedScraper {
 
     static private void parseContestEffects() throws IOException {
         parseTextBlockData(getContestEffectsText(), new ContestEffectsParser(), "out" + separator + "contestEffects.json");
+    }
+
+    static private void parseExperience() throws IOException {
+        parseTextBlockData(getUsefulChartsText(), new ExperienceParser(), "out" + separator + "experience.json");
     }
 }
