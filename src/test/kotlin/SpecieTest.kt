@@ -38,20 +38,24 @@ object SpecieTest : Spek({
         it("should be grass and poison type") {
             assertTrue(bulbasaur.types.contains("Grass"))
             assertTrue(bulbasaur.types.contains("Poison"))
+            assertEquals(2, bulbasaur.types.size)
         }
 
         it("should have the confidence and photosynthesis basic abilities") {
             assertTrue(bulbasaur.basicAbilities.contains("Confidence"))
             assertTrue(bulbasaur.basicAbilities.contains("Photosynthesis"))
+            assertEquals(2, bulbasaur.basicAbilities.size)
         }
 
         it("should have chlorophyll and leaf guard as advanced abilities") {
             assertTrue(bulbasaur.advancedAbilities.contains("Chlorophyll"))
             assertTrue(bulbasaur.advancedAbilities.contains("Leaf Guard"))
+            assertEquals(2, bulbasaur.advancedAbilities.size)
         }
 
         it("should have Courage as a high ability") {
             assertTrue(bulbasaur.highAbilities.contains("Courage"))
+            assertEquals(1, bulbasaur.highAbilities.size)
         }
 
         describe("evolution") {
@@ -63,6 +67,7 @@ object SpecieTest : Spek({
             }
             it("should evolve to Ivysaur") {
                 assertTrue(bulbasaur.evolvesTo.containsKey("Ivysaur"))
+                assertEquals(1, bulbasaur.evolvesTo.size)
             }
             it("should trigger evolution by leveling up") {
                 assertEquals("level", bulbasaur.evolvesTo["Ivysaur"]?.trigger)
@@ -109,6 +114,7 @@ object SpecieTest : Spek({
             it("should be in the monster and plant egg groups") {
                 assertTrue(bulbasaur.eggGroups.contains("Monster"))
                 assertTrue(bulbasaur.eggGroups.contains("Plant"))
+                assertEquals(2, bulbasaur.eggGroups.size)
             }
             it("should have an average hatch rate of 10") {
                 assertEquals(10, bulbasaur.averageHatchRate)
@@ -118,6 +124,7 @@ object SpecieTest : Spek({
         it("should have a herbivore and phototroph diet") {
             assertTrue(bulbasaur.diets.contains("Herbivore"))
             assertTrue(bulbasaur.diets.contains("Phototroph"))
+            assertEquals(2, bulbasaur.diets.size)
         }
 
         it("should live in the forest, grassland, and rainforest") {
@@ -145,6 +152,7 @@ object SpecieTest : Spek({
             it("should be able to naturewalk in grassland and forest areas") {
                 assertTrue(bulbasaur.capabilities.naturewalk.contains("Grassland"))
                 assertTrue(bulbasaur.capabilities.naturewalk.contains("Forest"))
+                assertEquals(2, bulbasaur.capabilities.naturewalk.size)
             }
             it("should have underdog as a special capability") {
                 assertTrue(bulbasaur.capabilities.specialCapabilities.contains("Underdog"))
@@ -199,45 +207,62 @@ object SpecieTest : Spek({
         describe("level up moves") {
             it("should learn tackle at level 1") {
                 assertTrue(bulbasaur.levelUpMoves["1"]!!.contains("Tackle"))
+                assertEquals(1, bulbasaur.levelUpMoves["1"]?.size)
             }
             it("should learn growl at level 3") {
                 assertTrue(bulbasaur.levelUpMoves["3"]!!.contains("Growl"))
+                assertEquals(1, bulbasaur.levelUpMoves["3"]?.size)
             }
             it("should learn leech seed at level 7") {
                 assertTrue(bulbasaur.levelUpMoves["7"]!!.contains("Leech Seed"))
+                assertEquals(1, bulbasaur.levelUpMoves["7"]?.size)
             }
             it("should learn vine whip at level 9") {
                 assertTrue(bulbasaur.levelUpMoves["9"]!!.contains("Vine Whip"))
+                assertEquals(1, bulbasaur.levelUpMoves["9"]?.size)
             }
             it("should learn poison powder at level 13") {
                 assertTrue(bulbasaur.levelUpMoves["13"]!!.contains("Poison Powder"))
+                assertEquals(2, bulbasaur.levelUpMoves["13"]?.size)
             }
             it("should learn sleep powder at level 13") {
                 assertTrue(bulbasaur.levelUpMoves["13"]!!.contains("Sleep Powder"))
+                assertEquals(2, bulbasaur.levelUpMoves["13"]?.size)
             }
             it("should learn take down at level 15") {
                 assertTrue(bulbasaur.levelUpMoves["15"]!!.contains("Take Down"))
+                assertEquals(1, bulbasaur.levelUpMoves["15"]?.size)
             }
             it("should learn razor leaf at level 19") {
                 assertTrue(bulbasaur.levelUpMoves["19"]!!.contains("Razor Leaf"))
+                assertEquals(1, bulbasaur.levelUpMoves["19"]?.size)
             }
             it("should learn sweet scent at level 21") {
                 assertTrue(bulbasaur.levelUpMoves["21"]!!.contains("Sweet Scent"))
+                assertEquals(1, bulbasaur.levelUpMoves["21"]?.size)
             }
             it("should learn growth at level 25") {
                 assertTrue(bulbasaur.levelUpMoves["25"]!!.contains("Growth"))
+                assertEquals(1, bulbasaur.levelUpMoves["25"]?.size)
             }
             it("should learn double-edge at level 27") {
                 assertTrue(bulbasaur.levelUpMoves["27"]!!.contains("Double-Edge"))
+                assertEquals(1, bulbasaur.levelUpMoves["27"]?.size)
             }
             it("should learn worry seed at level 31") {
                 assertTrue(bulbasaur.levelUpMoves["31"]!!.contains("Worry Seed"))
+                assertEquals(1, bulbasaur.levelUpMoves["31"]?.size)
             }
             it("should learn synthesis at level 33") {
                 assertTrue(bulbasaur.levelUpMoves["33"]!!.contains("Synthesis"))
+                assertEquals(1, bulbasaur.levelUpMoves["33"]?.size)
             }
             it("should learn seed bomb at level 37") {
                 assertTrue(bulbasaur.levelUpMoves["37"]!!.contains("Seed Bomb"))
+                assertEquals(1, bulbasaur.levelUpMoves["37"]?.size)
+            }
+            it("should have 13 level up moves") {
+                assertEquals(13, bulbasaur.levelUpMoves.size)
             }
         }
 
@@ -329,6 +354,9 @@ object SpecieTest : Spek({
             it("should be able to learn confide") {
                 assertTrue(bulbasaur.machineMoves.contains("Confide"))
             }
+            it("should have 29 learnable machine moves") {
+                assertEquals(29, bulbasaur.machineMoves.size)
+            }
         }
 
         // todo: egg move list
@@ -384,6 +412,9 @@ object SpecieTest : Spek({
             }
             it("can be taught worry seed") {
                 assertTrue(bulbasaur.tutorMoves.containsKey("Worry Seed"))
+            }
+            it("should have 17 tutor moves") {
+                assertEquals(17, bulbasaur.tutorMoves.size)
             }
         }
 
