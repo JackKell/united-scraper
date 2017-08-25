@@ -25,6 +25,7 @@ public class UnitedScraperApp {
         parseContestEffects();
         parseExperience();
         parseNatures();
+        parseDamageBases();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -142,5 +143,9 @@ public class UnitedScraperApp {
 
     static private void parseNatures() throws IOException {
         parseTextBlockData(getNaturesText(), new NaturesParser(), "out" + separator + "natures.json");
+    }
+
+    static private void parseDamageBases() throws IOException {
+        parseTextBlockData(getUsefulChartsText(), new DamageBaseParser(), "out" + separator + "damageBases.json");
     }
 }
