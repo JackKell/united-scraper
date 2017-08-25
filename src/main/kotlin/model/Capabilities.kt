@@ -1,3 +1,5 @@
+package model
+
 class Capabilities {
     lateinit var specialCapabilities: Array<String>
         private set

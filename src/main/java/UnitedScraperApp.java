@@ -1,6 +1,7 @@
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
+import parser.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static java.io.File.separator;
 
-public class UnitedScraper {
+public class UnitedScraperApp {
     public static void main(String[] args) throws IOException {
         parseSpecies();
         parseAbilities();

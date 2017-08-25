@@ -1,3 +1,5 @@
+package model
+
 class Jump {
     var high = 0
         private set

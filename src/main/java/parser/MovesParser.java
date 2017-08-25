@@ -1,6 +1,11 @@
+package parser;
+
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,15 +13,15 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 
-class MovesParser extends TextBlockParser {
+public class MovesParser extends TextBlockParser {
     // Recoil is not included in the list below because it is the only mechanic with a value
     final List<String> possibleMechanics = asList("Aura", "Berry", "Blessing", "Coat", "Dash", "Double Strike", "Environ",
             "Execute", "Exhaust", "Fling", "Friendly", "Five Strike", "Groundsource", "Hazard", "Illusion", "Interrupt",
             "Pass", "Pledge", "Powder", "Priority", "Push", "Reaction", "Set-up", "Shield", "Smite", "Social", "Sonic",
-            "Spirit Surge", "Trigger", "Vortex", "Weather", "Weight Class"
+            "Spirit Surge", "Trigger", "Vortex", "Weather", "model.Weight Class"
     );
 
-    JSONObject parse(String movesText) {
+    public JSONObject parse(String movesText) {
         final String cleanText = clean(movesText);
 //        System.out.println(cleanText);
         final JSONObject moves = new JSONObject();

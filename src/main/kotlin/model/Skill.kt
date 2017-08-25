@@ -1,3 +1,5 @@
+package model
+
 class Skill {
     var numberOfDice = 0
         private set

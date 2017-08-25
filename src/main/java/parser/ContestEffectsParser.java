@@ -1,3 +1,5 @@
+package parser;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -5,8 +7,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class ContestEffectsParser extends TextBlockParser{
-    JSONObject parse(String contestEffectsText) {
+public class ContestEffectsParser extends TextBlockParser{
+    public JSONObject parse(String contestEffectsText) {
         final String cleanText = clean(contestEffectsText);
 //        System.out.println(cleanText);
         JSONObject contestEffects = new JSONObject();

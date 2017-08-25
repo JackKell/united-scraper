@@ -1,3 +1,5 @@
+package model
+
 class Evolution {
     lateinit var name: String
         private set

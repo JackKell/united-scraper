@@ -1,3 +1,5 @@
+package parser;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -5,8 +7,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class CapabilitiesParser extends TextBlockParser {
-    JSONObject parse(String capabilitiesText) {
+public class CapabilitiesParser extends TextBlockParser {
+    public JSONObject parse(String capabilitiesText) {
         final String cleanText = clean(capabilitiesText);
 //        System.out.println(cleanText);
         JSONObject capabilities = new JSONObject();

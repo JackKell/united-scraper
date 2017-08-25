@@ -1,3 +1,5 @@
+package model
+
 class Specie {
     var averageHatchRate: Int? = 0
         private set

@@ -1,3 +1,5 @@
+package model
+
 class Stats {
     var specialDefense = 0
         private set

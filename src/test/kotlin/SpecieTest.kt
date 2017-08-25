@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 
 object SpecieTest : Spek({
     given("bulbasaur") {
-        val bulbasaur = Pokedex.Get("Bulbasaur")!!
+        val bulbasaur = SpeciesProvider.Get("Bulbasaur")!!
 
         it("should be named Bulbasaur") {
             assertEquals("Bulbasaur", bulbasaur.name)
@@ -98,7 +98,7 @@ object SpecieTest : Spek({
 
         describe("breeding information") {
             it("should be gendered") {
-                assertTrue(bulbasaur.genderRatio.gendered ?: false)
+                assertTrue(bulbasaur.genderRatio.gendered == true)
             }
             it("should have a male percent ratio of 87.5%") {
                 assertEquals(87.5f, bulbasaur.genderRatio.male)

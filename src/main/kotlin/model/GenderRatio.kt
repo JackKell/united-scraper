@@ -1,3 +1,5 @@
+package model
+
 class GenderRatio {
     var gendered: Boolean? = null
         private set

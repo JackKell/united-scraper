@@ -1,11 +1,13 @@
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import model.Specie
+import parser.SpeciesParser
 
-object Pokedex {
+object SpeciesProvider {
 
     private val species: Map<String, Specie> by lazy {
-        val pages = UnitedScraper.getSpeciePages()
+        val pages = UnitedScraperApp.getSpeciePages()
         val parser = SpeciesParser()
         val jsonObject = parser.parse(pages)
         val moshi = Moshi.Builder().build()

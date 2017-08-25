@@ -1,3 +1,5 @@
+package parser;
+
 import org.json.JSONObject;
 
 import java.util.regex.Matcher;
@@ -5,9 +7,9 @@ import java.util.regex.Pattern;
 
 import static java.lang.Integer.parseInt;
 
-class ExperienceParser extends TextBlockParser{
+public class ExperienceParser extends TextBlockParser{
     @Override
-    JSONObject parse(String text) {
+    public JSONObject parse(String text) {
         final String cleanText = clean(text);
 //        System.out.println(cleanText);
         JSONObject experience = new JSONObject();

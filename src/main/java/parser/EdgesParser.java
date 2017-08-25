@@ -1,3 +1,5 @@
+package parser;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -5,7 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class EdgesParser extends TextBlockParser {
+public class EdgesParser extends TextBlockParser {
     public JSONObject parse(String edgesText) {
         final String cleanText = clean(edgesText);
 //        System.out.println(cleanText);
@@ -51,7 +53,7 @@ class EdgesParser extends TextBlockParser {
         cleanText = cleanText.replaceAll("Edges[\\w\\W\\s]*(?=Skill Edges)", "");
         // Remove Edge Titles
         cleanText = cleanText.replaceAll("\\w* Edges\\s+", "");
-        // Remove Cast's note for Skill Stunt Edge
+        // Remove Cast's note for model.Skill Stunt Edge
         cleanText = cleanText.replaceAll("Cast.*Note[\\w\\W]*(?=Categoric Inclination)", "");
         // Add "Edge: " in front of each edge name to make parsing easier
         cleanText = cleanText.replaceAll("(.*\\s+(?=Prerequisites))", "Edge: $1");

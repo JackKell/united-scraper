@@ -1,6 +1,11 @@
+package parser;
+
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,27 +13,27 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 
-class SpeciesParser extends PageParser {
+public class SpeciesParser extends PageParser {
     private final List<String> problemSpecies = asList(
             "Pumpkaboo", // Too many forms
             "Gourgeist" // Too many forms
     );
 
     // A list of a the special capabilities
-    // Naturewalk and Mountable are not included in this list because they require there own parsers
+    // Naturewalk and Mountable are not included in this list because they require there own parser
     private final List<String> possibleSpecialCapabilities = asList("Alluring", "Amorphous", "Aura Reader", "Aura Pulse",
-            "Blindsense", "Bloom", "Blender", "Chilled", "Darkvision", "Dead Silent", "Delta Evolution", "Dream Mist",
+            "Blindsense", "Bloom", "Blender", "Chilled", "Darkvision", "Dead Silent", "Delta model.Evolution", "Dream Mist",
             "Dream Reader", "Egg Warmer", "Firestarter", "Fortune", "Fountain", "Freezer", "Gather Unown", "Gilled",
             "Glow", "Groundshaper", "Guster", "Heart Gift", "Heater", "Herb Growth", "Honey Gather", "Illusionist",
             "Inflatable", "Invisibility", "Juicer", "Keystone Warp", "Letter Press", "Living Weapon", "Magnetic",
             "Marsupial", "Materializer", "Milk Collection", "Mindlock", "Mushroom Harvest", "Mushroom Harvest",
             "Pack Mon", "Pearl Creation", "Phasing", "Planter", "Premonition", "Reach", "Shadow Meld", "Shapeshifter",
-            "Shrinkable", "Soulless", "Split Evolution", "Sprouter", "Stealth", "Telekinetic", "Telepath", "Threaded",
+            "Shrinkable", "Soulless", "Split model.Evolution", "Sprouter", "Stealth", "Telekinetic", "Telepath", "Threaded",
             "Tracker", "Tremorsense", "Underdog", "Volatile Bomb", "Wallclimber", "Weathershape", "Wielder", "Wired",
             "X-Ray Vision", "Zapper"
     );
 
-    JSONObject parse(List<String> pages) {
+    public JSONObject parse(List<String> pages) {
         JSONObject species = new JSONObject();
         for (String page: pages) {
             String cleanedPage = clean(page);
@@ -112,8 +117,8 @@ class SpeciesParser extends PageParser {
         cleanedPage = cleanedPage.replaceAll("Diet can change with its form", "Ditto");
         // Fix typo in Snivy ". lbs." to be " lbs."
         cleanedPage = cleanedPage.replaceAll("\\. lbs\\.", " lbs.");
-        // Fix typo in Kricketune for "Jump 3," to be "Jump 3/3,"
-        cleanedPage = cleanedPage.replaceAll("Jump 3,", "Jump 3/3");
+        // Fix typo in Kricketune for "model.Jump 3," to be "model.Jump 3/3,"
+        cleanedPage = cleanedPage.replaceAll("Jump 3,", "model.Jump 3/3");
         // Fix typo in Bayleef for "Ath " to be "Athl"
         cleanedPage = cleanedPage.replaceAll("Ath ", "Athl");
         // Fix typo in Servine for "Percep," to be "Percep"

@@ -1,3 +1,5 @@
+package model
+
 class Height {
     lateinit var size: String
         private set
