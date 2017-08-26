@@ -1,3 +1,4 @@
+import generator.TypeGenerator;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
@@ -26,6 +27,7 @@ public class UnitedScraperApp {
         parseExperience();
         parseNatures();
         parseDamageBases();
+        generateTypes();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -147,5 +149,10 @@ public class UnitedScraperApp {
 
     static private void parseDamageBases() throws IOException {
         parseTextBlockData(getUsefulChartsText(), new DamageBaseParser(), "out" + separator + "damageBases.json");
+    }
+
+        static private void generateTypes() throws IOException {
+        JSONObject jsonObject = new TypeGenerator().generate();
+        saveJSONObject(jsonObject, "out" + separator + "types.json");
     }
 }
