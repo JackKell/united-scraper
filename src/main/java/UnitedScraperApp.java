@@ -18,16 +18,17 @@ import static java.io.File.separator;
 
 public class UnitedScraperApp {
     public static void main(String[] args) throws IOException {
-        parseSpecies();
-        parseAbilities();
-        parseMoves();
-        parseCapabilities();
-        parseEdges();
-        parseContestEffects();
-        parseExperience();
-        parseNatures();
-        parseDamageBases();
-        generateTypes();
+//        parseSpecies();
+//        parseAbilities();
+//        parseMoves();
+//        parseCapabilities();
+//        parseEdges();
+//        parseContestEffects();
+//        parseExperience();
+//        parseNatures();
+//        parseDamageBases();
+//        generateTypes();
+        parseFeatures();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -100,6 +101,26 @@ public class UnitedScraperApp {
         return getCoreText(502);
     }
 
+    private static String getFeaturesText() throws IOException {
+        String featuresText = getCoreText(59, 64) + getCoreText(75, 76) + getCoreText(78, 79) +
+                getCoreText(81) + getCoreText(83, 84) + getCoreText(86) + getCoreText(88, 89) +
+                getCoreText(93, 94) + getCoreText(96) + getCoreText(97) +
+                getCoreText(99) + getCoreText(101) + getCoreText(103) +
+                getCoreText(105, 106) + getCoreText(108, 109) + getCoreText(112) +
+                getCoreText(113) + getCoreText(115, 116) + getCoreText(117) +
+                getCoreText(119) + getCoreText(120, 128) + getCoreText(131, 132) + getCoreText(134) +
+                getCoreText(135) + getCoreText(137, 138) + getCoreText(140, 147) +
+                getCoreText(149, 151) + getCoreText(155) + getCoreText(157) +
+                getCoreText(159) + getCoreText(161, 162) +
+                getCoreText(164) + getCoreText(166, 167) +
+                getCoreText(169) + getCoreText(171) + getCoreText(173) +
+                getCoreText(177) + getCoreText(179, 180) +
+                getCoreText(182) + getCoreText(184) + getCoreText(186) +
+                getCoreText(187) + getCoreText(189) + getCoreText(191) +
+                getCoreText(193) + getCoreText(195);
+        return featuresText;
+    }
+
     private static void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
         final String objectData = jsonObject.toString(2);
         final List<String> lines = Collections.singletonList(objectData);
@@ -149,6 +170,10 @@ public class UnitedScraperApp {
 
     private static void parseDamageBases() throws IOException {
         parseTextBlockData(getUsefulChartsText(), new DamageBaseParser(), "out" + separator + "damageBases.json");
+    }
+
+    private static void parseFeatures() throws IOException {
+        parseTextBlockData(getFeaturesText(), new FeaturesParser(), "out" + separator + "features.json");
     }
 
     private static void generateTypes() throws IOException {
