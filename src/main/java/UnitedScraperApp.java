@@ -56,11 +56,11 @@ public class UnitedScraperApp {
         return pages;
     }
 
-    static private String getCoreText(int pageNumber) throws IOException {
+    private static String getCoreText(int pageNumber) throws IOException {
         return getCoreText(pageNumber, pageNumber);
     }
 
-    static private String getCoreText(int start, int end) throws IOException {
+    private static String getCoreText(int start, int end) throws IOException {
         final String corePath = "src" + separator + "main" + separator + "resources" + separator + "core.pdf";
         final File file = new File(corePath);
         final PDDocument core = PDDocument.load(file);
@@ -72,86 +72,86 @@ public class UnitedScraperApp {
         return text;
     }
 
-    static private String getMovesText() throws IOException {
+    private static String getMovesText() throws IOException {
         return getCoreText(346, 435);
     }
 
-    static private String getAbilitiesText() throws IOException {
+    private static String getAbilitiesText() throws IOException {
         return getCoreText(311, 336);
     }
 
-    static private String getCapabilitiesText() throws IOException {
+    private static String getCapabilitiesText() throws IOException {
         return getCoreText(303, 308);
     }
 
-    static private String getEdgesText() throws IOException {
+    private static String getEdgesText() throws IOException {
         return getCoreText(52, 56);
     }
 
-    static private String getContestEffectsText() throws IOException {
+    private static String getContestEffectsText() throws IOException {
         return getCoreText(266);
     }
 
-    static private String getUsefulChartsText() throws IOException {
+    private static String getUsefulChartsText() throws IOException {
         return getCoreText(497);
     }
 
-    static private String getNaturesText() throws IOException {
+    private static String getNaturesText() throws IOException {
         return getCoreText(502);
     }
 
-    static private void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
+    private static void saveJSONObject(JSONObject jsonObject, String path) throws IOException {
         final String objectData = jsonObject.toString(2);
         final List<String> lines = Collections.singletonList(objectData);
         final Path file = Paths.get(path);
         Files.write(file, lines, Charset.forName("UTF-8"));
     }
 
-    static private void parseTextBlockData(String data, TextBlockParser textBlockParser, String outputPath) throws IOException {
+    private static void parseTextBlockData(String data, TextBlockParser textBlockParser, String outputPath) throws IOException {
         final JSONObject jsonObject = textBlockParser.parse(data);
         saveJSONObject(jsonObject, outputPath);
     }
 
-    static private void parseSpecies() throws IOException {
+    private static void parseSpecies() throws IOException {
         final List<String> speciesPages = getSpeciePages();
         final SpeciesParser speciesParser = new SpeciesParser();
         final JSONObject speciesObject = speciesParser.parse(speciesPages);
         saveJSONObject(speciesObject, "out" + separator + "species.json");
     }
 
-    static private void parseAbilities() throws IOException {
+    private static void parseAbilities() throws IOException {
         parseTextBlockData(getAbilitiesText(), new AbilitiesParser(), "out" + separator + "abilities.json");
     }
 
-    static private void parseMoves() throws IOException {
+    private static void parseMoves() throws IOException {
         parseTextBlockData(getMovesText(), new MovesParser(), "out" + separator + "moves.json");
     }
 
-    static private void parseCapabilities() throws IOException {
+    private static void parseCapabilities() throws IOException {
         parseTextBlockData(getCapabilitiesText(), new CapabilitiesParser(), "out" + separator + "capabilities.json");
     }
 
-    static private void parseEdges() throws IOException {
+    private static void parseEdges() throws IOException {
         parseTextBlockData(getEdgesText(), new EdgesParser(), "out" + separator + "edges.json");
     }
 
-    static private void parseContestEffects() throws IOException {
+    private static void parseContestEffects() throws IOException {
         parseTextBlockData(getContestEffectsText(), new ContestEffectsParser(), "out" + separator + "contestEffects.json");
     }
 
-    static private void parseExperience() throws IOException {
+    private static void parseExperience() throws IOException {
         parseTextBlockData(getUsefulChartsText(), new ExperienceParser(), "out" + separator + "experience.json");
     }
 
-    static private void parseNatures() throws IOException {
+    private static void parseNatures() throws IOException {
         parseTextBlockData(getNaturesText(), new NaturesParser(), "out" + separator + "natures.json");
     }
 
-    static private void parseDamageBases() throws IOException {
+    private static void parseDamageBases() throws IOException {
         parseTextBlockData(getUsefulChartsText(), new DamageBaseParser(), "out" + separator + "damageBases.json");
     }
 
-        static private void generateTypes() throws IOException {
+    private static void generateTypes() throws IOException {
         JSONObject jsonObject = new TypeGenerator().generate();
         saveJSONObject(jsonObject, "out" + separator + "types.json");
     }
