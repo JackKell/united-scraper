@@ -1,5 +1,7 @@
 package parser;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -183,7 +185,7 @@ public class SpeciesParser extends PageParser {
             final int weightClass = parseInt(weightMatcher.group(3));
             weight.put("lbs", lbs);
             weight.put("kg", kg);
-            weight.put("class", weightClass);
+            weight.put("weightClass", weightClass);
             return weight;
         } else {
             throw new Error("ERROR: All pokemon species should have a weight to parse\n" + page);
@@ -289,6 +291,7 @@ public class SpeciesParser extends PageParser {
         return levelUpMoves;
     }
 
+    @Nullable
     private List<String> parseMachineMoves(String page) {
         final List<String> machineMoves = new ArrayList<>();
         final String machineMoveListRegex = "TM/HM Move List\\s*([\\s\\d\\w,-]*?)(?:Egg|Tutor)";
@@ -315,6 +318,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private Map<String, Object> parseTutorMoves(String page) {
         final Map<String, Object> tutorMoves = new HashMap<>();
         final String tutorMoveListRegex = "Tutor *Move *List\\s+([\\w\\W]*?)(?=Mega Evolution|$)";
@@ -343,6 +347,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private List<String> parseEggMoves(String page) {
         final String eggMoveListRegex = "Egg Move List\\s*([-a-zA-Z,\\s]+)Tutor Move List";
         final Matcher eggMoveListMatcher = Pattern.compile(eggMoveListRegex).matcher(page);
@@ -377,6 +382,7 @@ public class SpeciesParser extends PageParser {
         return advancedAbilities;
     }
 
+    @Nullable
     private String parseInteractCondition(String conditions) {
         final String interactRegex = "[Ii]nteract with (\\w*)";
         final Matcher interactMatcher = Pattern.compile(interactRegex).matcher(conditions);
@@ -386,6 +392,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private Integer parseMinLevelCondition(String conditions) {
         final String minLevelRegex = "M\\w*m (\\d+)";
         final Matcher minLevelMatcher = Pattern.compile(minLevelRegex).matcher(conditions);
@@ -396,12 +403,14 @@ public class SpeciesParser extends PageParser {
         }
     }
 
+    @Nullable
     private String parseGenderCondition(String conditions) {
         if (conditions.toLowerCase().contains("female")) return "female";
         else if (conditions.toLowerCase().contains("male")) return "male";
         else return null;
     }
 
+    @Nullable
     private String parseHeldItemCondition(String conditions) {
         final String heldItemRegex = "Holding +(.*)? +(?=M\\w*m)";
         final Matcher heldItemMatcher = Pattern.compile(heldItemRegex).matcher(conditions);
@@ -411,6 +420,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private String parseUseItemCondition(String conditions) {
         final String useItemRegex = "\\w* Stone";
         final Matcher heldItemMatcher = Pattern.compile(useItemRegex).matcher(conditions);
@@ -423,6 +433,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private String parseLearnCondition(String conditions) {
         final String learnRegex = "Learn +(\\S*(?: \\S*)?)";
         final Matcher learnMatcher = Pattern.compile(learnRegex).matcher(conditions);
@@ -432,12 +443,14 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private String parseTimeOfDayCondition(String conditions) {
         if (conditions.toLowerCase().contains("night")) return "night";
         else if (conditions.toLowerCase().contains("day")) return "day";
         else return null;
     }
 
+    @Nullable
     private Map<String, Object> parseEvolutionCondition(String conditions) {
         final Map<String, Object> evolutionCondition = new HashMap<>();
         if (conditions.trim().isEmpty()) return null;
@@ -451,6 +464,7 @@ public class SpeciesParser extends PageParser {
         return evolutionCondition;
     }
 
+    @NotNull
     private String parseCapabilityInformation(String page) {
         final String capabilityInformationRegex = "Capability List\\s+([\\w\\W]+?)(?=Skill List)";
         final Matcher capabilityInformationMatcher = Pattern.compile(capabilityInformationRegex).matcher(page);
@@ -481,12 +495,15 @@ public class SpeciesParser extends PageParser {
         capabilities.put("levitate", parseLabeledInteger("Levitate", capabilityInformation));
         capabilities.put("power", parseLabeledInteger("Power", capabilityInformation));
         capabilities.put("burrow", parseLabeledInteger("Burrow", capabilityInformation));
-        capabilities.put("jump", parseJump(capabilityInformation));
+        final Map<String, Integer> jump = parseJump(capabilityInformation);
+        capabilities.put("highJump", jump.get("high"));
+        capabilities.put("longJump", jump.get("long"));
         capabilities.put("mountable", parseLabeledInteger("Mountable", capabilityInformation));
         capabilities.put("naturewalk", parseNaturewalk(capabilityInformation));
         return capabilities;
     }
 
+    @NotNull
     private Integer parseStage(String page, String pokemonName) {
         final String stageRegex = "(\\d) +- +" + pokemonName;
         final Matcher stageMatcher = Pattern.compile(stageRegex).matcher(page);
@@ -496,11 +513,13 @@ public class SpeciesParser extends PageParser {
         throw new Error("All pokemon species must have stage to parse\n" + page);
     }
 
+    @Nullable
     private List<String> parseMegaTypes(String types) {
         if (types.trim().equals("Unchanged")) return null;
         return parseDelimitedList(types, "/");
     }
 
+    @Nullable
     private Integer parseMegaEvolutionStat(String statsString, String stat) {
         final String statRegex = "(-?\\d+) " + stat;
         final Matcher statMatcher = Pattern.compile(statRegex).matcher(statsString);
@@ -520,6 +539,7 @@ public class SpeciesParser extends PageParser {
         return stats;
     }
 
+    @Nullable
     private List<Map<String, Object>> parseMegaEvolutions(String page) {
         final List<Map<String, Object>> megaEvolutions = new ArrayList<>();
         final String megaEvolutionRegex = "Mega *Evolution *(.*)?\\s*" +
@@ -547,6 +567,7 @@ public class SpeciesParser extends PageParser {
         return megaEvolutions;
     }
 
+    @Nullable
     private List<String> parseNaturewalk(String capabilityInformation) {
         final String naturewalkRegex = "[Nn]aturewalk *\\((.*)\\)";
         final Matcher naturewalkMatcher = Pattern.compile(naturewalkRegex).matcher(capabilityInformation);
@@ -556,6 +577,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Nullable
     private String parseEvolvesFrom(String page, int currentStage) {
         final String evolvesFromRegex = (currentStage - 1) + " *- *([\\w-]*)";
         final Matcher evolvesFromMatcher = Pattern.compile(evolvesFromRegex).matcher(page);
@@ -573,6 +595,7 @@ public class SpeciesParser extends PageParser {
         else return null;
     }
 
+    @Nullable
     private Map<String, Object> parseEvolvesTo(String page, int currentStage) {
         final String evolvesToRegex = (currentStage + 1) + " *- *([\\w-]*) *(.*)";
         final Matcher evolvesToMatcher = Pattern.compile(evolvesToRegex).matcher(page);

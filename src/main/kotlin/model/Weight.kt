@@ -5,6 +5,6 @@ class Weight {
         private set
     var kg = 0.0f
         private set
-    var `class` = 0
+    var weightClass = 0
         private set
 }

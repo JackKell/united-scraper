@@ -97,7 +97,7 @@ object SpecieTest : Spek({
                 assertEquals(6.9f, bulbasaur.weight.kg)
             }
             it("should be in weight class 1") {
-                assertEquals(1, bulbasaur.weight.`class`)
+                assertEquals(1, bulbasaur.weight.weightClass)
             }
         }
 
@@ -141,10 +141,10 @@ object SpecieTest : Spek({
                 assertEquals(3, bulbasaur.capabilities.swim)
             }
             it("should have a long jump of 0") {
-                assertEquals(0, bulbasaur.capabilities.jump.long)
+                assertEquals(0, bulbasaur.capabilities.longJump)
             }
             it("should have a high jump of 2") {
-                assertEquals(2, bulbasaur.capabilities.jump.high)
+                assertEquals(2, bulbasaur.capabilities.highJump)
             }
             it("should have a power of 2") {
                 assertEquals(2, bulbasaur.capabilities.power)

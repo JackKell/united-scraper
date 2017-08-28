@@ -9,8 +9,10 @@ class Capabilities {
         private set
     lateinit var naturewalk: Array<String>
         private set
-    var swim= 0
+    var swim = 0
         private set
-    lateinit var jump: Jump
+    var highJump = 0
+        private set
+    var longJump  = 0
         private set
 }
