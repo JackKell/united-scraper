@@ -23,17 +23,17 @@ public class SpeciesParser extends PageParser {
     );
 
     // A list of a the special capabilities
-    // Naturewalk and Mountable are not included in this list because they require there own parser
+    // Naturewalk, Mountable, and Reach are included in this list but they also require there own meta-data
     private final List<String> possibleSpecialCapabilities = asList("Alluring", "Amorphous", "Aura Reader", "Aura Pulse",
             "Blindsense", "Bloom", "Blender", "Chilled", "Darkvision", "Dead Silent", "Delta model.Evolution", "Dream Mist",
             "Dream Reader", "Egg Warmer", "Firestarter", "Fortune", "Fountain", "Freezer", "Gather Unown", "Gilled",
             "Glow", "Groundshaper", "Guster", "Heart Gift", "Heater", "Herb Growth", "Honey Gather", "Illusionist",
             "Inflatable", "Invisibility", "Juicer", "Keystone Warp", "Letter Press", "Living Weapon", "Magnetic",
             "Marsupial", "Materializer", "Milk Collection", "Mindlock", "Mushroom Harvest", "Mushroom Harvest",
-            "Pack Mon", "Pearl Creation", "Phasing", "Planter", "Premonition", "Reach", "Shadow Meld", "Shapeshifter",
+            "Pack Mon", "Pearl Creation", "Phasing", "Planter", "Premonition", "Shadow Meld", "Shapeshifter",
             "Shrinkable", "Soulless", "Split model.Evolution", "Sprouter", "Stealth", "Telekinetic", "Telepath", "Threaded",
             "Tracker", "Tremorsense", "Underdog", "Volatile Bomb", "Wallclimber", "Weathershape", "Wielder", "Wired",
-            "X-Ray Vision", "Zapper"
+            "X-Ray Vision", "Zapper", "Mountable", "Naturewalk", "Reach"
     );
 
     public JSONObject parse(List<String> pages) {
@@ -148,6 +148,8 @@ public class SpeciesParser extends PageParser {
         cleanedPage = cleanedPage.replaceAll("(Habitat *: *)[\r\n]+", "$1");
         // Fix Porygon-Z to have a "Diet:" instead of a "Biology:"
         cleanedPage = cleanedPage.replaceAll("Biology *:", "Diet :");
+        // Reach capability sometimes not have a value following it
+        cleanedPage = cleanedPage.replaceAll("Reach(?! \\d)", "Reach 1");
         return cleanedPage;
     }
 
@@ -499,6 +501,7 @@ public class SpeciesParser extends PageParser {
         capabilities.put("levitate", parseLabeledInteger("Levitate", capabilityInformation));
         capabilities.put("power", parseLabeledInteger("Power", capabilityInformation));
         capabilities.put("burrow", parseLabeledInteger("Burrow", capabilityInformation));
+        capabilities.put("reach", parseLabeledInteger("Reach", capabilityInformation));
         final Map<String, Integer> jump = parseJump(capabilityInformation);
         capabilities.put("highJump", jump.get("high"));
         capabilities.put("longJump", jump.get("long"));
