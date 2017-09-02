@@ -18,16 +18,16 @@ import static java.io.File.separator;
 
 public class UnitedScraperApp {
     public static void main(String[] args) throws IOException {
-//        parseSpecies();
-//        parseAbilities();
-//        parseMoves();
-//        parseCapabilities();
-//        parseEdges();
-//        parseContestEffects();
-//        parseExperience();
-//        parseNatures();
-//        parseDamageBases();
-//        generateTypes();
+        parseSpecies();
+        parseAbilities();
+        parseMoves();
+        parseCapabilities();
+        parseEdges();
+        parseContestEffects();
+        parseExperience();
+        parseNatures();
+        parseDamageBases();
+        generateTypes();
         parseFeatures();
     }
 

@@ -1,5 +1,6 @@
 package parser;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -85,6 +86,9 @@ public class SpeciesParser extends PageParser {
         cleanedPage = cleanedPage.replaceAll("^\\d{2,3}\\s+", "");
         // Connect words the are separated by a newline
         cleanedPage = cleanedPage.replaceAll("(\\w)-[\r\n]+(\\w)", "$1$2");
+        // But in some cases words that should be connected by a dash are changed so we fix them here
+        // Like X-Ray
+        cleanedPage = cleanedPage.replaceAll("XRay", "X-Ray");
         // Fix typo for Drilbur
         cleanedPage = cleanedPage.replace('!', '1');
         // Replace special characters
@@ -587,6 +591,7 @@ public class SpeciesParser extends PageParser {
         return null;
     }
 
+    @Contract("null -> null")
     private String parseEvolutionTrigger(Map<String, Object> conditions) {
         if (conditions == null) return null;
         if (conditions.get("interact") != null) return "interact";
