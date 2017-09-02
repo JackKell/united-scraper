@@ -95,6 +95,8 @@ public class SpeciesParser extends PageParser {
         cleanedPage = cleanSpecialCharacters(cleanedPage);
         // Remove "add" typos in egg group (Phantump, Trevenant, and others)
         cleanedPage = cleanedPage.replaceAll(" and ", " / ");
+        // Fix " and " in evolution condition
+        cleanedPage = cleanedPage.replaceAll("Attack / Defense", "Attack and Defense");
         // Put all stages of evolution onto 1 line (For example of Shelmet)
         cleanedPage = cleanedPage.replaceAll("(\\d +- +[\\S]+.*)[\r\n]+ ( \\D)", "$1$2");
         // Fix é to be e
@@ -402,11 +404,8 @@ public class SpeciesParser extends PageParser {
     private Integer parseMinLevelCondition(String conditions) {
         final String minLevelRegex = "M\\w*m (\\d+)";
         final Matcher minLevelMatcher = Pattern.compile(minLevelRegex).matcher(conditions);
-        if (minLevelMatcher.find()) {
-            return parseInt(minLevelMatcher.group(1));
-        } else {
-            return null;
-        }
+        if (minLevelMatcher.find()) return parseInt(minLevelMatcher.group(1));
+        return null;
     }
 
     @Nullable
@@ -420,9 +419,7 @@ public class SpeciesParser extends PageParser {
     private String parseHeldItemCondition(String conditions) {
         final String heldItemRegex = "Holding +(.*)? +(?=M\\w*m)";
         final Matcher heldItemMatcher = Pattern.compile(heldItemRegex).matcher(conditions);
-        if (heldItemMatcher.find()) {
-            return heldItemMatcher.group(1).trim();
-        }
+        if (heldItemMatcher.find()) return heldItemMatcher.group(1).trim();
         return null;
     }
 
@@ -443,9 +440,7 @@ public class SpeciesParser extends PageParser {
     private String parseLearnCondition(String conditions) {
         final String learnRegex = "Learn +(\\S*(?: \\S*)?)";
         final Matcher learnMatcher = Pattern.compile(learnRegex).matcher(conditions);
-        if (learnMatcher.find()) {
-            return learnMatcher.group(1);
-        }
+        if (learnMatcher.find()) return learnMatcher.group(1);
         return null;
     }
 
@@ -465,6 +460,20 @@ public class SpeciesParser extends PageParser {
     }
 
     @Nullable
+    private String parseRelativeStatsConditions(String conditions) {
+        // Note:
+        // 1) This is very hard coded because there is only one species to parse that has this condition
+        // 2) This functions returns a string that will need to be evaluated by the application in the end.
+        // It seemed that making this return an object would have greatly limited the number of possibilities
+        // therefore this function returns a String formatted like a boolean conditional statement so that any
+        // combination of stat relations could be included.
+        if (conditions.contains("Superior Defense")) return "defense > attack";
+        else if (conditions.contains("Superior Attack")) return "attack > defense";
+        else if (conditions.contains("Equal Attack and Defense")) return "attack == defense";
+        return null;
+    }
+
+    @Nullable
     private Map<String, Object> parseEvolutionConditions(String conditions) {
         if (conditions.trim().isEmpty()) return null;
         final Map<String, Object> evolutionCondition = new HashMap<>();
@@ -476,6 +485,7 @@ public class SpeciesParser extends PageParser {
         evolutionCondition.put("learnMove", parseLearnCondition(conditions));
         evolutionCondition.put("interact", parseInteractCondition(conditions));
         evolutionCondition.put("exposedToType", parseExposedToTypeCondition(conditions));
+        evolutionCondition.put("relativeStats", parseRelativeStatsConditions(conditions));
         return evolutionCondition;
     }
 
