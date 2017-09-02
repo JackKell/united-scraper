@@ -457,9 +457,17 @@ public class SpeciesParser extends PageParser {
     }
 
     @Nullable
-    private Map<String, Object> parseEvolutionCondition(String conditions) {
-        final Map<String, Object> evolutionCondition = new HashMap<>();
+    private String parseExposedToTypeCondition(String conditions) {
+        final String exposedToTypeRegex = "exposed to (\\w+) Type";
+        final Matcher exposedToTypeMatcher = Pattern.compile(exposedToTypeRegex).matcher(conditions);
+        if (exposedToTypeMatcher.find()) return exposedToTypeMatcher.group(1).trim();
+        return null;
+    }
+
+    @Nullable
+    private Map<String, Object> parseEvolutionConditions(String conditions) {
         if (conditions.trim().isEmpty()) return null;
+        final Map<String, Object> evolutionCondition = new HashMap<>();
         evolutionCondition.put("level", parseMinLevelCondition(conditions));
         evolutionCondition.put("gender", parseGenderCondition(conditions));
         evolutionCondition.put("timeOfDay", parseTimeOfDayCondition(conditions));
@@ -467,6 +475,7 @@ public class SpeciesParser extends PageParser {
         evolutionCondition.put("useItem", parseUseItemCondition(conditions));
         evolutionCondition.put("learnMove", parseLearnCondition(conditions));
         evolutionCondition.put("interact", parseInteractCondition(conditions));
+        evolutionCondition.put("exposedToType", parseExposedToTypeCondition(conditions));
         return evolutionCondition;
     }
 
@@ -597,7 +606,8 @@ public class SpeciesParser extends PageParser {
     @Contract("null -> null")
     private String parseEvolutionTrigger(Map<String, Object> conditions) {
         if (conditions == null) return null;
-        if (conditions.get("interact") != null) return "interact";
+        else if (conditions.get("exposedToType") != null) return "exposedToType";
+        else if (conditions.get("interact") != null) return "interact";
         else if (conditions.get("useItem") != null) return "useItem";
         else if (conditions.get("level") != null) return "level";
         else return null;
@@ -611,7 +621,8 @@ public class SpeciesParser extends PageParser {
         while (evolvesToMatcher.find()) {
             final Map<String, Object> evolution = new HashMap<>();
             final String name = evolvesToMatcher.group(1).trim();
-            final Map<String, Object> conditions = parseEvolutionCondition(evolvesToMatcher.group(2));
+            final String conditionText = evolvesToMatcher.group(2).trim();
+            final Map<String, Object> conditions = parseEvolutionConditions(conditionText);
             final String trigger = parseEvolutionTrigger(conditions);
             evolution.put("name", name);
             evolution.put("conditions", conditions);
